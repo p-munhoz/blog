@@ -23,6 +23,12 @@
     <guid>https://quartz.jzhao.xyz/</guid>
     <description>This is a blank Quartz installation. See the documentation for how to get started. how-to-delete-old-dbt-models-bigquery.</description>
     <pubDate>Wed, 28 Aug 2024 17:00:11 GMT</pubDate>
+  </item><item>
+    <title>How to host Airbyte on Google Cloud Platform?</title>
+    <link>https://quartz.jzhao.xyz/airbyte-gcp</link>
+    <guid>https://quartz.jzhao.xyz/airbyte-gcp</guid>
+    <description>In this article I’ll show you how to setup Airbyte on Google Cloud Platform. According to Airbyte documentation here the requirements: To test Airbyte, we recommend an e2.medium instance and provision at least 30GBs of disk per node To deploy Airbyte in a production environment, we recommend a n1-standard-2 instance Setup of Airbyte on the VM Create your Virtual Machine Install docker &amp; docker-compose Install docker on your VM sudo apt-get update sudo apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common curl -fsSL download.docker.com/linux/debian/gpg | sudo apt-key add -- sudo add-apt-repository &quot;deb [arch=amd64] download.docker.com/linux/debian buster stable&quot; sudo apt-get update sudo apt-get install -y docker-ce docker-ce-cli containerd.io sudo usermod -a -G docker $USER Then install docker compose sudo apt-get -y install docker-compose-plugin docker compose version Then close your SSH connection and open it again to take into account the modifications.</description>
+    <pubDate>Thu, 01 Aug 2024 16:54:28 GMT</pubDate>
   </item>
     </channel>
   </rss>
