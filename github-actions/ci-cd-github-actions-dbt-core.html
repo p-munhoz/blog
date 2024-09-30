@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en"><head><title>CI/CD pipeline implementation with GitHub Actions for dbt-core transformations</title><meta charset="utf-8"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM Plex Mono&amp;family=Schibsted Grotesk:wght@400;700&amp;family=Source Sans Pro:ital,wght@0,400;0,600;1,400;1,600&amp;display=swap"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta property="og:title" content="CI/CD pipeline implementation with GitHub Actions for dbt-core transformations"/><meta property="og:description" content="CI/CD Pipeline Implementation with GitHub Actions for dbt-Core Transformations Project Overview I built a dbt project for my company to manage data transformations in BigQuery ..."/><meta property="og:image" content="https://quartz.jzhao.xyz/static/og-image.png"/><meta property="og:width" content="1200"/><meta property="og:height" content="675"/><link rel="icon" href="../static/icon.png"/><meta name="description" content="CI/CD Pipeline Implementation with GitHub Actions for dbt-Core Transformations Project Overview I built a dbt project for my company to manage data transformations in BigQuery ..."/><meta name="generator" content="Quartz"/><link href="../index.css" rel="stylesheet" type="text/css" spa-preserve/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" rel="stylesheet" type="text/css" spa-preserve/><script src="../prescript.js" type="application/javascript" spa-preserve></script><script type="application/javascript" spa-preserve>const fetchData = fetch("../static/contentIndex.json").then(data => data.json())</script></head><body data-slug="github-actions/ci-cd-github-actions-dbt-core"><div id="quartz-root" class="page"><div id="quartz-body"><div class="left sidebar"><h2 class="page-title"><a href="..">❄️ Pierre Munhoz blog</a></h2><div class="spacer mobile-only"></div><div class="search"><button class="search-button" id="search-button"><p>Search</p><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title>Search</title><g class="search-path" fill="none"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"></path><circle cx="8" cy="8" r="7"></circle></g></svg></button><div id="search-container"><div id="search-space"><input autocomplete="off" id="search-bar" name="search" type="text" aria-label="Search for something" placeholder="Search for something"/><div id="search-layout" data-preview="true"></div></div></div></div><button class="darkmode" id="darkmode"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="dayIcon" x="0px" y="0px" viewBox="0 0 35 35" style="enable-background:new 0 0 35 35" xml:space="preserve" aria-label="Dark mode"><title>Dark mode</title><path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="nightIcon" x="0px" y="0px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100" xml:space="preserve" aria-label="Light mode"><title>Light mode</title><path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571  C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23  c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369  c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65  c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"></path></svg></button><div class="explorer desktop-only"><button type="button" id="explorer" data-behavior="collapse" data-collapsed="collapsed" data-savestate="true" data-tree="[{&quot;path&quot;:&quot;airbyte&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;gcp&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;github-actions&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;interviews&quot;,&quot;collapsed&quot;:true}]" aria-controls="explorer-content" aria-expanded="false"><h2>Explorer</h2><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div id="explorer-content"><ul class="overflow" id="explorer-ul"><li><div class="folder-outer open"><ul style="padding-left:0;" class="content" data-folderul><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="airbyte"><button class="folder-button"><span class="folder-title">airbyte</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="airbyte"><li><a href="../airbyte/how-to-backup-airbyte-gcp" data-for="airbyte/how-to-backup-airbyte-gcp">How to backup Airbyte on Google Cloud Storage?</a></li><li><a href="../airbyte/how-to-setup-airbyte-gcp" data-for="airbyte/how-to-setup-airbyte-gcp">How to host Airbyte on Google Cloud Platform?</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="gcp"><button class="folder-button"><span class="folder-title">GCP</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="gcp"><li><a href="../gcp/how-to-delete-old-dbt-models-bigquery" data-for="gcp/how-to-delete-old-dbt-models-bigquery">How to remove deleted dbt models in BigQuery?</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="github-actions"><button class="folder-button"><span class="folder-title">github-actions</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="github-actions"><li><a href="../github-actions/ci-cd-github-actions-dbt-core" data-for="github-actions/ci-cd-github-actions-dbt-core">CI/CD pipeline implementation with GitHub Actions for dbt-core transformations</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="interviews"><button class="folder-button"><span class="folder-title">interviews</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="interviews"><li><a href="../interviews/case-study" data-for="interviews/case-study">case-study</a></li></ul></div></li><li><div class="folder-outer "><ul style="padding-left:0;" class="content" data-folderul></ul></div></li><li><a href="../caviar-airways" data-for="caviar-airways">Caviar-airways: discover the world through music</a></li></ul></div></li><li id="explorer-end"></li></ul></div></div></div><div class="center"><div class="page-header"><div class="popover-hint"><nav class="breadcrumb-container" aria-label="breadcrumbs"><div class="breadcrumb-element"><a href="../">Home</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../github-actions/">github actions</a><p> ❯ </p></div><div class="breadcrumb-element"><a href>CI/CD pipeline implementation with GitHub Actions for dbt-core transformations</a></div></nav><h1 class="article-title">CI/CD pipeline implementation with GitHub Actions for dbt-core transformations</h1><p show-comma="true" class="content-meta"><span>Sep 28, 2024</span><span>12 min read</span></p><ul class="tags"><li><a href="../tags/GitHub" class="internal tag-link">GitHub</a></li><li><a href="../tags/GitHub-Actions" class="internal tag-link">GitHub-Actions</a></li><li><a href="../tags/dbt-core" class="internal tag-link">dbt-core</a></li></ul></div></div><article class="popover-hint"><h2 id="cicd-pipeline-implementation-with-github-actions-for-dbt-core-transformations">CI/CD Pipeline Implementation with GitHub Actions for dbt-Core Transformations<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#cicd-pipeline-implementation-with-github-actions-for-dbt-core-transformations" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<h3 id="project-overview">Project Overview<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#project-overview" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>I built a dbt project for my company to manage data transformations in BigQuery. This project required creating a seamless CI/CD pipeline that would streamline the development process and ensure quality control with every change. To achieve this, I integrated GitHub Actions, automating tests, running modified files only, and maintaining a strict separation between development and production environments.</p>
+<h3 id="environment-setup">Environment Setup<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#environment-setup" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>In BigQuery, I have separated two distinct environments:</p>
+<ul>
+<li><strong>Development:</strong> Used for testing and running the latest changes.</li>
+<li><strong>Production:</strong> Runs the stable and verified dbt models every day or on release.</li>
+</ul>
+<p>Having two environments — development and production — in a data warehouse is crucial for ensuring the stability, accuracy, and reliability of data workflows. Here’s why:</p>
+<h4 id="1-prevent-disruptions-in-production">1. Prevent Disruptions in Production<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#1-prevent-disruptions-in-production" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>The production environment contains live, critical data that business stakeholders rely on for decision-making. Any errors or changes introduced directly into production could disrupt operations, lead to inaccurate reporting, and damage trust in the data.</p>
+<p>By separating the environments, you can test new changes, transformations, and queries in the development environment without risking disruptions in production.</p>
+<h4 id="2-safe-testing-and-development">2. Safe Testing and Development<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#2-safe-testing-and-development" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>In the development environment, data engineers, analytics engineers or data analysts can experiment with new models, transformations, and optimizations. This allows for iterative testing, debugging, and validation of the changes without the fear of breaking live data workflows.</p>
+<p>Having this space to test ensures that any issues are resolved before code is promoted to production.</p>
+<h4 id="3-data-quality-assurance">3. Data Quality Assurance<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#3-data-quality-assurance" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>A key aspect of managing a data warehouse is ensuring the quality and accuracy of the data. By using a development environment to run tests, validate queries, and check for anomalies, you ensure that only validated, high-quality data models are deployed to production.</p>
+<p>In dbt, for example, you can run tests like unique checks, not-null constraints, and referential integrity checks in development before moving to production.</p>
+<h4 id="4-controlled-deployment-of-changes">4. Controlled Deployment of Changes<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#4-controlled-deployment-of-changes" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>In a CI/CD workflow, having two environments allows for incremental deployment. Changes can be tested and validated in development, and only those that pass are merged into production. This reduces the likelihood of bugs and errors affecting the production environment.</p>
+<p>With version control and environment separation, you can deploy changes more confidently, ensuring minimal impact on production.</p>
+<h4 id="5-auditability-and-rollback">5. Auditability and Rollback<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#5-auditability-and-rollback" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>The two-environment setup provides a clear audit trail of changes. If an issue arises after a release to production, it is easy to trace the modifications made in the development environment and roll back to a stable state if needed.</p>
+<p>Having a safe place for experimentation allows teams to better manage rollbacks and troubleshoot potential issues.</p>
+<h4 id="6-efficient-resource-management">6. Efficient Resource Management<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#6-efficient-resource-management" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>Production workloads are usually heavier and optimized for performance. Running experimental queries or transformations directly in production could cause resource bottlenecks, slow down critical processes, or increase costs.</p>
+<p>By isolating development processes, teams can run tests and transformations in a separate, controlled environment without affecting the performance or cost efficiency of the production system.</p>
+<h3 id="github-actions-workflow">GitHub Actions Workflow<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#github-actions-workflow" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>The CI/CD pipeline uses GitHub Actions to automate the following tasks:</p>
+<h4 id="1-pull-request-pr-validation-and-testing">1. <strong>Pull Request (PR) Validation and Testing</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#1-pull-request-pr-validation-and-testing" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>This workflow, named <code>dev-test-pr</code>, is designed to ensure that pull requests (PRs) meet certain criteria before they can be merged. It includes checks for rebase status, commit count, commit messages, specific code patterns, and SQL file linting using SQLFluff.</p>
+<h5 id="workflow-dev-test-pr">Workflow: <code>dev-test-pr</code><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#workflow-dev-test-pr" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<h6 id="trigger">Trigger<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#trigger" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h6>
+<p>The workflow is triggered by pull request events such as:</p>
+<ul>
+<li>Opening a PR</li>
+<li>Synchronizing (updating) a PR</li>
+<li>Reopening a PR</li>
+<li>Marking a PR as ready for review</li>
+</ul>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">pull_request</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">types</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: [</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">opened</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">synchronize</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">reopened</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ready_for_review</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">]</span></span></code></pre></figure>
+<h6 id="environment-variables">Environment Variables<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#environment-variables" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h6>
+<p>Several environment variables are set up for use throughout the workflow:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">env</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	DBT_PROFILES_DIR</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">./</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	DBT_GOOGLE_PROJECT</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ vars.DBT_GOOGLE_PROJECT }}</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	DBT_GOOGLE_DATASET</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dev_staging</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	DBT_GOOGLE_DATASET_QA</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dev_qa</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	DBT_GOOGLE_KEYFILE</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">/tmp/google/google-service-account.json</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	DBT_MANIFEST</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">./manifest.json</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	DBT_STATE</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">./</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	ENV</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dev</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	TARGET</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dev</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	KEYFILE_CONTENTS</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ secrets.DBT_SVC_DEV }}</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"> # Contents of the keyfile from GitHub Secrets</span></span></code></pre></figure>
+<h5 id="jobs">Jobs<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#jobs" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<h6 id="1-rebase-check">1. Rebase Check<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#1-rebase-check" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h6>
+<p>This job checks if the PR branch is rebased on the main branch.</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">jobs</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">rebase-check</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">if</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ ! github.event.pull_request.draft }}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">runs-on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ubuntu-latest</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">steps</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Checkout PR branch</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">actions/checkout@v2</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">with</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">ref</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.event.pull_request.head.ref }}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">fetch-depth</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Fetch main branch</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">git fetch origin main</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Check if PR is rebased on main</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">git merge-base --is-ancestor origin/main ${{ github.event.pull_request.head.sha }}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">if [ $? -ne 0 ]; then</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">echo &quot;::error::PR is not rebased on main branch. Please rebase your branch.&quot;</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">exit 1</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">fi</span></span>
+<span data-line> </span></code></pre></figure>
+<h6 id="2-commit-count-check">2. Commit Count Check<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#2-commit-count-check" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h6>
+<p>This job ensures the PR has only one commit.</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">nb-of-commits-check</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">if</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ ! github.event.pull_request.draft }}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">runs-on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ubuntu-latest</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">steps</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Checkout PR branch</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">actions/checkout@v2</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">with</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">ref</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.event.pull_request.head.ref }}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">fetch-depth</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Count commits in PR</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">commit-count</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">COMMIT_COUNT=$(git rev-list --count origin/main..HEAD)</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">echo &quot;commit_count=$COMMIT_COUNT&quot; >> $GITHUB_ENV</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Check commit count</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">if [ &quot;${{ env.commit_count }}&quot; -gt 1 ]; then</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">echo &quot;::error::PR has more than 1 commit. Please squash your commits.&quot;</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">exit 1</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">fi</span></span>
+<span data-line> </span></code></pre></figure>
+<h6 id="3-commit-message-check">3. Commit Message Check<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#3-commit-message-check" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h6>
+<p>This job validates that commit messages follow specified conventions.</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">commit-message-check</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">if</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ ! github.event.pull_request.draft }}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">runs-on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ubuntu-latest</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">steps</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Checkout PR branch</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">actions/checkout@v2</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">with</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">ref</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.event.pull_request.head.ref }}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">fetch-depth</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Check commit messages</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">INVALID_COMMIT_MSG=$(git log --format=%B origin/main..HEAD | grep -vE '^(feat|ci|fix|docs|refactor|creation)')</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">if [ -n &quot;$INVALID_COMMIT_MSG&quot; ]; then</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">echo &quot;::error::Some commits do not start with a valid keyword (feat, ci, fix, docs, refactor, creation)</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">$INVALID_COMMIT_MSG&quot;</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">exit 1</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">fi</span></span>
+<span data-line> </span></code></pre></figure>
+<h6 id="4-sqlfluff-lint">4. SQLFluff Lint<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#4-sqlfluff-lint" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h6>
+<p>This job lints modified SQL files using SQLFluff to ensure code quality.</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">sqlfluff-lint</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">runs-on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ubuntu-latest</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">steps</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Checkout Code</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">actions/checkout@v3</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">with</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">fetch-depth</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Fetch base branch</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">git fetch origin ${{ github.event.pull_request.base.ref }}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Set up Python and Install SQLFluff</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">actions/setup-python@v4</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">with</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">python-version</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'3.11'</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">python -m pip install --upgrade pip</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">pip install sqlfluff</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Get Modified SQL Files</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">sql_files</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">CHANGED_FILES=$(git diff --name-only --diff-filter=ACM origin/${{ github.event.pull_request.base.ref }})</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">SQL_FILES=$(echo &quot;$CHANGED_FILES&quot; | grep -E '\.sql$' || true)</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">SQL_FILES=$(echo &quot;$SQL_FILES&quot; | tr '\n' ' ' | xargs)</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">echo &quot;SQL_FILES=$SQL_FILES&quot; >> $GITHUB_ENV</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Run SQLFluff Lint</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">if</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">env.SQL_FILES &amp;&amp; env.SQL_FILES != ''</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">if [ -z &quot;$SQL_FILES&quot; ]; then</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">echo &quot;No SQL files to lint.&quot;</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">exit 0</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">fi</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">sqlfluff lint $SQL_FILES</span></span>
+<span data-line> </span></code></pre></figure>
+<h4 id="workflow-benefits">Workflow Benefits<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#workflow-benefits" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<ul>
+<li>
+<p>Automated Quality Checks: The workflow ensures that PRs meet predefined standards, reducing the chance of errors in production.</p>
+</li>
+<li>
+<p>Rebase Enforcement: Prevents issues that can arise from outdated branches.</p>
+</li>
+<li>
+<p>Commit Message Standards: Maintains consistency in commit messages, improving project documentation and history.</p>
+</li>
+<li>
+<p>Code Quality Assurance: Linting SQL files promotes best practices in SQL code writing.</p>
+</li>
+</ul>
+<h3 id="2-execute-dbt-build-in-development-environment-on-pr-merge">2. Execute <i>dbt build</i> in development environment on PR Merge<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#2-execute-dbt-build-in-development-environment-on-pr-merge" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>This GitHub Actions workflow automates the process of executing <i>dbt build</i> in development environment whenever a pull request (PR) is merged. It ensures that the project is built and deployed correctly, while also managing authentication and logging.</p>
+<h4 id="workflow-details">Workflow Details<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#workflow-details" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<ul>
+<li>
+<p><strong>Name</strong>: <i>run dev on PR merge</i></p>
+</li>
+<li>
+<p><strong>Trigger</strong>: The workflow runs when a pull request is closed.</p>
+</li>
+</ul>
+<h4 id="environment-variables-1">Environment Variables<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#environment-variables-1" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>The workflow defines several environment variables to facilitate its operations:</p>
+<ul>
+<li>
+<p><code>DBT_PROFILES_DIR</code>: Specifies the directory for dbt profiles.</p>
+</li>
+<li>
+<p><code>DBT_GOOGLE_PROJECT</code>: The Google project ID.</p>
+</li>
+<li>
+<p><code>DBT_GOOGLE_DATASET</code>: The dataset to use for development.</p>
+</li>
+<li>
+<p><code>DBT_GOOGLE_KEYFILE</code>: Path for the Google service account keyfile.</p>
+</li>
+<li>
+<p><code>DBT_MANIFEST</code>: Path to the dbt manifest file.</p>
+</li>
+<li>
+<p><code>DBT_STATE</code>: Directory for dbt state.</p>
+</li>
+<li>
+<p><code>ENV</code>: Environment setting (set to <code>dev</code>).</p>
+</li>
+<li>
+<p><code>TARGET</code>: Target environment (set to <code>dev</code>).</p>
+</li>
+<li>
+<p><code>KEYFILE_CONTENTS</code>: Contents of the Google service account keyfile pulled from GitHub Secrets.</p>
+</li>
+</ul>
+<h4 id="job">Job<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#job" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>This job runs on an <code>ubuntu-latest</code> environment and consists of several key steps:</p>
+<h5 id="1-checkout-code">1. <strong>Checkout Code</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#1-checkout-code" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Uses <code>actions/checkout@v4</code> to check out the code from the repository.</p>
+<h5 id="2-prepare-google-keyfile">2. <strong>Prepare Google Keyfile</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#2-prepare-google-keyfile" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Creates the necessary directory and writes the keyfile contents.</p>
+<h5 id="3-authenticate-to-google-cloud">3. <strong>Authenticate to Google Cloud</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#3-authenticate-to-google-cloud" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Uses the <code>google-github-actions/auth@v2</code> action to authenticate using the service account.</p>
+<h5 id="4-download-manifest-file">4. <strong>Download Manifest File</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#4-download-manifest-file" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Downloads the <code>manifest.json</code> file from Google Cloud Storage using <code>gsutil</code>.</p>
+<h5 id="5-run-a-multi-line-script">5. <strong>Run a Multi-line Script</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#5-run-a-multi-line-script" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Placeholder for additional build, test, and deployment commands.</p>
+<h5 id="6-set-up-python">6. <strong>Set Up Python</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#6-set-up-python" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Uses <code>actions/setup-python@v2</code> to set up Python 3.11.</p>
+<h5 id="7-install-dependencies">7. <strong>Install Dependencies</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#7-install-dependencies" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Installs necessary Python packages, including <code>dbt-core</code> and <code>dbt-bigquery</code>.</p>
+<h5 id="8-run-dbt-build">8. <strong>Run dbt Build</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#8-run-dbt-build" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Executes <code>dbt build</code> to build the project based on the modified states.</p>
+<h5 id="9-upload-logs-on-failure">9. <strong>Upload Logs on Failure</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#9-upload-logs-on-failure" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>If the build fails, it uploads logs to Google Cloud Storage for troubleshooting.</p>
+<h5 id="10-deploy-via-gcs">10. <strong>Deploy via GCS</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#10-deploy-via-gcs" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>If successful, it deploys the <code>manifest.json</code> file to Google Cloud Storage.</p>
+<h5 id="11-report-status-on-slack">11. <strong>Report Status on Slack</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#11-report-status-on-slack" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h5>
+<p>Uses a Slack notification action to report the status of the workflow, including details about the run and the user who initiated the PR.</p>
+<h4 id="workflow-benefits-1">Workflow Benefits<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#workflow-benefits-1" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>This GitHub Actions workflow effectively automates the development process for merged pull requests, ensuring that all necessary tasks are performed consistently and efficiently, while also keeping the team informed about the workflow’s status.</p>
+<h3 id="3-production-release-prod---incremental-runs">3. <strong>Production Release (prod) - Incremental Runs</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#3-production-release-prod---incremental-runs" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>In this GitHub Actions workflow, I automated the process of running dbt whenever a new release is published (only for modified models). Here’s a detailed breakdown of the steps involved and their purposes:</p>
+<h4 id="1-trigger-on-release-publication">1. Trigger on Release Publication<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#1-trigger-on-release-publication" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>The workflow is triggered by the release event, specifically when a new release is published.</p>
+<p>This ensures that dbt tasks are executed automatically whenever a new version of your project is released.</p>
+<h4 id="2-setting-up-environment-variables">2. Setting Up Environment Variables<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#2-setting-up-environment-variables" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>The workflow sets several environment variables, including:</p>
+<ul>
+<li>
+<p>DBT_PROFILES_DIR: Specifies where the dbt profiles are located.</p>
+</li>
+<li>
+<p>DBT_GOOGLE_PROJECT and PROJECT_ID: Point to the Google Cloud project that will be used for dbt’s BigQuery integration.</p>
+</li>
+<li>
+<p>DBT_GOOGLE_KEYFILE: A temporary path where the service account credentials will be stored.</p>
+</li>
+<li>
+<p>KEYFILE_CONTENTS: Fetches the contents of the service account key from the GitHub Secrets.</p>
+</li>
+</ul>
+<h4 id="3-job-run-dbt">3. Job: run-dbt<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#3-job-run-dbt" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>Runs on ubuntu-latest: The job executes on the latest Ubuntu environment.</p>
+<p><strong>Steps within the run-dbt job:</strong></p>
+<p>3.1. Checkout Repository</p>
+<p>Uses actions/checkout@v3 to pull the code from the repository. The fetch-depth: 0 option ensures all tags are retrieved, which is important for later comparisons between releases.</p>
+<p>3.2. Setup for Google Cloud Authentication</p>
+<ul>
+<li>
+<p>Creates a directory for storing the Google Cloud service account credentials, then writes the KEYFILE_CONTENTS into the DBT_GOOGLE_KEYFILE.</p>
+</li>
+<li>
+<p>The step google-github-actions/auth@v2 is used to authenticate the GitHub Actions runner with Google Cloud, using the provided credentials.</p>
+</li>
+</ul>
+<p>3.3. Google Cloud Storage Interaction</p>
+<ul>
+<li>
+<p>The gcloud auth activate-service-account step authenticates with Google Cloud.</p>
+</li>
+<li>
+<p>A gsutil command downloads the manifest.json file from Google Cloud Storage. This file is used for state-based dbt builds to compare between the current and previous dbt runs.</p>
+</li>
+</ul>
+<p>3.4. Python Setup</p>
+<ul>
+<li>
+<p>actions/setup-python@v2 installs Python version 3.11 for running dbt. This is done twice to ensure Python and dbt are properly set up.</p>
+</li>
+</ul>
+<p>3.5. Install dbt and Dependencies</p>
+<ul>
+<li>
+<p>Installs dbt-core and dbt-bigquery to allow running dbt with BigQuery as the target.</p>
+</li>
+<li>
+<p>dbt deps —target prod installs dbt project dependencies using the prod target environment.</p>
+</li>
+</ul>
+<p>3.6. Run dbt Build</p>
+<ul>
+<li>
+<p>The dbt build command runs dbt models that have been modified based on the state comparison (—select state:modified+). This allows only the modified models and their dependencies to be rebuilt, optimizing runtime.</p>
+</li>
+</ul>
+<p>3.7. Generate dbt Documentation</p>
+<ul>
+<li>
+<p>The dbt docs generate step builds documentation from the dbt project, which will be used to display metadata and lineage for the models in your dbt project.</p>
+</li>
+</ul>
+<p>3.8. Custom Python Script</p>
+<ul>
+<li>
+<p>A custom Python script replace_dbt_docs.py is executed. It modifies the generated dbt documentation before it’s uploaded to the cloud.</p>
+</li>
+</ul>
+<p>3.9. Upload dbt Docs to Google Cloud</p>
+<ul>
+<li>
+<p>Uses gsutil to upload the dbt documentation (index.html, catalog.json, manifest.json) to a specified Google Cloud Storage bucket (gs://lucca-dbt-docs/static/).</p>
+</li>
+</ul>
+<h4 id="4-capture-and-categorize-file-changes">4. Capture and Categorize File Changes<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#4-capture-and-categorize-file-changes" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>This step is responsible for comparing the current release with the previous one, capturing which files have been modified, added, deleted, or renamed.</p>
+<p>A git diff command is used to list the differences between the two release tags.</p>
+<p>The changes are categorized and stored in separate text files (modified_files.txt, added_files.txt, deleted_files.txt, renamed_files.txt), then compiled into a summary file (file_changes.txt).</p>
+<h4 id="5-slack-notification">5. Slack Notification<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#5-slack-notification" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>After capturing the file changes, the workflow sends the categorized changes to a Slack channel.</p>
+<p>Two Slack notifications are triggered:</p>
+<ul>
+<li>
+<p>Status Report: This sends the overall status of the workflow (e.g., success or failure) to a Slack channel.</p>
+</li>
+<li>
+<p>File Changes Report: This sends the categorized file changes between the two releases (added, modified, deleted, renamed) to a designated Slack channel, keeping the team informed about what has changed in the latest release.</p>
+</li>
+</ul>
+<h4 id="key-benefits">Key Benefits<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#key-benefits" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<ul>
+<li>
+<p>Automated dbt Runs on Release: Ensures that the latest version of your data models is built and documented whenever a new release is published.</p>
+</li>
+<li>
+<p>Selective Rebuilds: By using dbt build —select state:modified+, only the modified models are rebuilt, reducing build times and ensuring efficient processing.</p>
+</li>
+<li>
+<p>Continuous Deployment of Documentation: dbt documentation is generated and pushed to a cloud storage bucket, allowing the latest documentation to be accessible immediately after each release.</p>
+</li>
+<li>
+<p>Automated Notifications: Slack notifications keep the team updated on the workflow status and changes, improving communication and transparency in the release process.</p>
+</li>
+<li>
+<p>File Change Tracking: The workflow tracks and categorizes file changes between releases, which helps with auditing and understanding the scope of each release.</p>
+</li>
+</ul>
+<h3 id="4-daily-production-runs">4. <strong>Daily Production Runs</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#4-daily-production-runs" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ul>
+<li>
+<p>Every day, the production environment runs a complete refresh of the dbt models to ensure data consistency and accuracy.</p>
+</li>
+</ul>
+<h2 id="key-benefits-1">Key Benefits<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#key-benefits-1" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<ul>
+<li>
+<p><strong>Faster Development Cycles:</strong> By running only the modified files, we significantly reduced the time to test and deploy changes.</p>
+</li>
+<li>
+<p><strong>Automated Quality Checks:</strong> PR validation with <code>sqlfluff</code> and dbt testing ensures that only high-quality code is merged.</p>
+</li>
+<li>
+<p><strong>Separation of Environments:</strong> The development and production environments in BigQuery are completely isolated, minimizing the risk of impacting production data during development.</p>
+</li>
+<li>
+<p><strong>Continuous Production Runs:</strong> The daily production runs ensure that data is always up to date and accurate, providing business stakeholders with reliable insights.</p>
+</li>
+</ul>
+<h2 id="conclusion">Conclusion<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#conclusion" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>This CI/CD pipeline has streamlined the development process for dbt transformations in BigQuery, reduced time spent on deployments, and improved overall code quality. By leveraging GitHub Actions and dbt’s manifest, I was able to create a robust system that scales well and maintains data integrity across environments.</p>
+<p>Feel free to reach out if you’d like a similar solution implemented for your data workflows!</p></article><hr/><div class="page-footer"></div></div><div class="right sidebar"><div class="graph"><h3>Graph View</h3><div class="graph-outer"><div id="graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:1,&quot;scale&quot;:1.1,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:false}"></div><button id="global-graph-icon" aria-label="Global Graph"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 55 55" fill="currentColor" xml:space="preserve"><path d="M49,0c-3.309,0-6,2.691-6,6c0,1.035,0.263,2.009,0.726,2.86l-9.829,9.829C32.542,17.634,30.846,17,29,17
+                s-3.542,0.634-4.898,1.688l-7.669-7.669C16.785,10.424,17,9.74,17,9c0-2.206-1.794-4-4-4S9,6.794,9,9s1.794,4,4,4
+                c0.74,0,1.424-0.215,2.019-0.567l7.669,7.669C21.634,21.458,21,23.154,21,25s0.634,3.542,1.688,4.897L10.024,42.562
+                C8.958,41.595,7.549,41,6,41c-3.309,0-6,2.691-6,6s2.691,6,6,6s6-2.691,6-6c0-1.035-0.263-2.009-0.726-2.86l12.829-12.829
+                c1.106,0.86,2.44,1.436,3.898,1.619v10.16c-2.833,0.478-5,2.942-5,5.91c0,3.309,2.691,6,6,6s6-2.691,6-6c0-2.967-2.167-5.431-5-5.91
+                v-10.16c1.458-0.183,2.792-0.759,3.898-1.619l7.669,7.669C41.215,39.576,41,40.26,41,41c0,2.206,1.794,4,4,4s4-1.794,4-4
+                s-1.794-4-4-4c-0.74,0-1.424,0.215-2.019,0.567l-7.669-7.669C36.366,28.542,37,26.846,37,25s-0.634-3.542-1.688-4.897l9.665-9.665
+                C46.042,11.405,47.451,12,49,12c3.309,0,6-2.691,6-6S52.309,0,49,0z M11,9c0-1.103,0.897-2,2-2s2,0.897,2,2s-0.897,2-2,2
+                S11,10.103,11,9z M6,51c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S8.206,51,6,51z M33,49c0,2.206-1.794,4-4,4s-4-1.794-4-4
+                s1.794-4,4-4S33,46.794,33,49z M29,31c-3.309,0-6-2.691-6-6s2.691-6,6-6s6,2.691,6,6S32.309,31,29,31z M47,41c0,1.103-0.897,2-2,2
+                s-2-0.897-2-2s0.897-2,2-2S47,39.897,47,41z M49,10c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S51.206,10,49,10z"></path></svg></button></div><div id="global-graph-outer"><div id="global-graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:-1,&quot;scale&quot;:0.9,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:true}"></div></div></div><div class="toc desktop-only"><button type="button" id="toc" class aria-controls="toc-content" aria-expanded="true"><h3>Table of Contents</h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div id="toc-content" class><ul class="overflow"><li class="depth-0"><a href="#cicd-pipeline-implementation-with-github-actions-for-dbt-core-transformations" data-for="cicd-pipeline-implementation-with-github-actions-for-dbt-core-transformations">CI/CD Pipeline Implementation with GitHub Actions for dbt-Core Transformations</a></li><li class="depth-1"><a href="#project-overview" data-for="project-overview">Project Overview</a></li><li class="depth-1"><a href="#environment-setup" data-for="environment-setup">Environment Setup</a></li><li class="depth-1"><a href="#github-actions-workflow" data-for="github-actions-workflow">GitHub Actions Workflow</a></li><li class="depth-1"><a href="#2-execute-idbt-buildi-in-development-environment-on-pr-merge" data-for="2-execute-idbt-buildi-in-development-environment-on-pr-merge">2. Execute &lt;i>dbt build&lt;/i> in development environment on PR Merge</a></li><li class="depth-1"><a href="#3-production-release-prod---incremental-runs" data-for="3-production-release-prod---incremental-runs">3. Production Release (prod) - Incremental Runs</a></li><li class="depth-1"><a href="#4-daily-production-runs" data-for="4-daily-production-runs">4. Daily Production Runs</a></li><li class="depth-0"><a href="#key-benefits" data-for="key-benefits">Key Benefits</a></li><li class="depth-0"><a href="#conclusion" data-for="conclusion">Conclusion</a></li></ul></div></div><div class="backlinks"><h3>Backlinks</h3><ul class="overflow"><li>No backlinks found</li></ul></div></div></div><footer class><p>Created with ❤️ by <a href="https://pierre-munhoz-portfolio.vercel.app/" target="_blank">Pierre Munhoz</a> © 2024</p><ul><li><a href="https://github.com/p-munhoz/">GitHub</a></li></ul></footer></div></body><script type="application/javascript">function c(){let t=this.parentElement;t.classList.toggle("is-collapsed");let l=t.classList.contains("is-collapsed")?this.scrollHeight:t.scrollHeight;t.style.maxHeight=l+"px";let o=t,e=t.parentElement;for(;e;){if(!e.classList.contains("callout"))return;let n=e.classList.contains("is-collapsed")?e.scrollHeight:e.scrollHeight+o.scrollHeight;e.style.maxHeight=n+"px",o=e,e=e.parentElement}}function i(){let t=document.getElementsByClassName("callout is-collapsible");for(let s of t){let l=s.firstElementChild;if(l){l.addEventListener("click",c),window.addCleanup(()=>l.removeEventListener("click",c));let e=s.classList.contains("is-collapsed")?l.scrollHeight:s.scrollHeight;s.style.maxHeight=e+"px"}}}document.addEventListener("nav",i);window.addEventListener("resize",i);
+</script><script type="module">
+          let mermaidImport = undefined
+          document.addEventListener('nav', async () => {
+            if (document.querySelector("code.mermaid")) {
+              mermaidImport ||= await import('https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.esm.min.mjs')
+              const mermaid = mermaidImport.default
+              const darkMode = document.documentElement.getAttribute('saved-theme') === 'dark'
+              mermaid.initialize({
+                startOnLoad: false,
+                securityLevel: 'loose',
+                theme: darkMode ? 'dark' : 'default'
+              })
+
+              await mermaid.run({
+                querySelector: '.mermaid'
+              })
+            }
+          });
+          </script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/copy-tex.min.js" type="application/javascript"></script><script src="../postscript.js" type="module"></script></html>

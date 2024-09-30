@@ -1,13 +1,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url>
-    <loc>https://quartz.jzhao.xyz/airbyte-gcp</loc>
-    <lastmod>2024-08-01T16:54:28.696Z</lastmod>
+    <loc>https://quartz.jzhao.xyz/airbyte/how-to-backup-airbyte-gcp</loc>
+    <lastmod>2024-09-30T10:03:45.207Z</lastmod>
   </url><url>
-    <loc>https://quartz.jzhao.xyz/how-to-delete-old-dbt-models-bigquery</loc>
-    <lastmod>2024-08-28T17:00:11.034Z</lastmod>
+    <loc>https://quartz.jzhao.xyz/airbyte/how-to-setup-airbyte-gcp</loc>
+    <lastmod>2024-07-01T00:00:00.000Z</lastmod>
+  </url><url>
+    <loc>https://quartz.jzhao.xyz/caviar-airways</loc>
+    <lastmod>2024-09-30T10:03:45.207Z</lastmod>
+  </url><url>
+    <loc>https://quartz.jzhao.xyz/gcp/how-to-delete-old-dbt-models-bigquery</loc>
+    <lastmod>2024-08-27T00:00:00.000Z</lastmod>
+  </url><url>
+    <loc>https://quartz.jzhao.xyz/gcp/</loc>
+    <lastmod>2024-07-01T00:00:00.000Z</lastmod>
+  </url><url>
+    <loc>https://quartz.jzhao.xyz/github-actions/ci-cd-github-actions-dbt-core</loc>
+    <lastmod>2024-09-28T00:00:00.000Z</lastmod>
   </url><url>
     <loc>https://quartz.jzhao.xyz/</loc>
-    <lastmod>2024-08-28T17:00:11.034Z</lastmod>
+    <lastmod>2024-09-30T10:03:45.207Z</lastmod>
   </url><url>
-    <loc>https://quartz.jzhao.xyz/test</loc>
-    <lastmod>2024-08-28T17:00:36.596Z</lastmod>
+    <loc>https://quartz.jzhao.xyz/interviews/case-study</loc>
+    <lastmod>2024-09-30T10:03:45.207Z</lastmod>
   </url></urlset>

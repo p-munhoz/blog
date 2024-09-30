@@ -6,29 +6,53 @@
       <description>Last 10 notes on ❄️ Pierre Munhoz blog</description>
       <generator>Quartz -- quartz.jzhao.xyz</generator>
       <item>
-    <title>Caviar-airways: discover the world through music</title>
-    <link>https://quartz.jzhao.xyz/test</link>
-    <guid>https://quartz.jzhao.xyz/test</guid>
-    <description>Introduction I love music! I know, it’s not very original since a lot of people spend a lot of their time listening music. With a friend in my business school we did our thesis together by mixing our two passions: music (his) and computer science (mine).</description>
-    <pubDate>Wed, 28 Aug 2024 17:00:36 GMT</pubDate>
+    <title>How to backup Airbyte on Google Cloud Storage?</title>
+    <link>https://quartz.jzhao.xyz/airbyte/how-to-backup-airbyte-gcp</link>
+    <guid>https://quartz.jzhao.xyz/airbyte/how-to-backup-airbyte-gcp</guid>
+    <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte. For a migration from one place to another Backup creation of the old instance Stop all the services docker-compose down Start only the database docker-compose up -d db Create the backup database file docker exec airbyte-db pg_dump -U docker airbyte &gt; airbyte_backup.sql Stop the service again docker-compose down When you’ve done that you have generated airbyte_backup.sql file.</description>
+    <pubDate>Mon, 30 Sep 2024 10:03:45 GMT</pubDate>
   </item><item>
-    <title>How to remove deleted dbt models in BigQuery?</title>
-    <link>https://quartz.jzhao.xyz/how-to-delete-old-dbt-models-bigquery</link>
-    <guid>https://quartz.jzhao.xyz/how-to-delete-old-dbt-models-bigquery</guid>
-    <description>Context I’m pretty sure that you already had renamed or removed a model in dbt and after few weeks/months you noticed that you have the old model and the new one that co-exist in your data ...</description>
-    <pubDate>Wed, 28 Aug 2024 17:00:11 GMT</pubDate>
+    <title>Caviar-airways: discover the world through music</title>
+    <link>https://quartz.jzhao.xyz/caviar-airways</link>
+    <guid>https://quartz.jzhao.xyz/caviar-airways</guid>
+    <description>Introduction I love music! I know, it’s not very original since a lot of people spend a lot of their time listening music. With a friend in my business school we did our thesis together by mixing our two passions: music (his) and computer science (mine).</description>
+    <pubDate>Mon, 30 Sep 2024 10:03:45 GMT</pubDate>
   </item><item>
     <title>Welcome to my engineering blog</title>
     <link>https://quartz.jzhao.xyz/</link>
     <guid>https://quartz.jzhao.xyz/</guid>
-    <description>This is a blank Quartz installation. See the documentation for how to get started. how-to-delete-old-dbt-models-bigquery.</description>
-    <pubDate>Wed, 28 Aug 2024 17:00:11 GMT</pubDate>
+    <description>Who am I? Hello 👋, I’m Pierre Munhoz, a Senior Data Engineer with 6 years of experience. I enjoy cooking, running &amp; coding (especially when it involves playing with data).</description>
+    <pubDate>Mon, 30 Sep 2024 10:03:45 GMT</pubDate>
+  </item><item>
+    <title>case-study</title>
+    <link>https://quartz.jzhao.xyz/interviews/case-study</link>
+    <guid>https://quartz.jzhao.xyz/interviews/case-study</guid>
+    <description></description>
+    <pubDate>Mon, 30 Sep 2024 10:03:45 GMT</pubDate>
+  </item><item>
+    <title>CI/CD pipeline implementation with GitHub Actions for dbt-core transformations</title>
+    <link>https://quartz.jzhao.xyz/github-actions/ci-cd-github-actions-dbt-core</link>
+    <guid>https://quartz.jzhao.xyz/github-actions/ci-cd-github-actions-dbt-core</guid>
+    <description>CI/CD Pipeline Implementation with GitHub Actions for dbt-Core Transformations Project Overview I built a dbt project for my company to manage data transformations in BigQuery ...</description>
+    <pubDate>Sat, 28 Sep 2024 00:00:00 GMT</pubDate>
+  </item><item>
+    <title>How to remove deleted dbt models in BigQuery?</title>
+    <link>https://quartz.jzhao.xyz/gcp/how-to-delete-old-dbt-models-bigquery</link>
+    <guid>https://quartz.jzhao.xyz/gcp/how-to-delete-old-dbt-models-bigquery</guid>
+    <description>Context I’m pretty sure that you already had renamed or removed a model in dbt and after few weeks/months you noticed that you have the old model and the new one that co-exist in your data ...</description>
+    <pubDate>Tue, 27 Aug 2024 00:00:00 GMT</pubDate>
   </item><item>
     <title>How to host Airbyte on Google Cloud Platform?</title>
-    <link>https://quartz.jzhao.xyz/airbyte-gcp</link>
-    <guid>https://quartz.jzhao.xyz/airbyte-gcp</guid>
-    <description>In this article I’ll show you how to setup Airbyte on Google Cloud Platform. According to Airbyte documentation here the requirements: To test Airbyte, we recommend an e2.medium instance and provision at least 30GBs of disk per node To deploy Airbyte in a production environment, we recommend a n1-standard-2 instance Setup of Airbyte on the VM Create your Virtual Machine Install docker &amp; docker-compose Install docker on your VM sudo apt-get update sudo apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common curl -fsSL download.docker.com/linux/debian/gpg | sudo apt-key add -- sudo add-apt-repository &quot;deb [arch=amd64] download.docker.com/linux/debian buster stable&quot; sudo apt-get update sudo apt-get install -y docker-ce docker-ce-cli containerd.io sudo usermod -a -G docker $USER Then install docker compose sudo apt-get -y install docker-compose-plugin docker compose version Then close your SSH connection and open it again to take into account the modifications.</description>
-    <pubDate>Thu, 01 Aug 2024 16:54:28 GMT</pubDate>
+    <link>https://quartz.jzhao.xyz/airbyte/how-to-setup-airbyte-gcp</link>
+    <guid>https://quartz.jzhao.xyz/airbyte/how-to-setup-airbyte-gcp</guid>
+    <description>In this article I’ll show you how to setup Airbyte on Google Cloud Platform. Setup of Airbyte on the VM Create your Virtual Machine According to Airbyte documentation here the requirements: To test Airbyte, we recommend an e2.medium instance and provision at least 30GBs of disk per node To deploy Airbyte in a production environment, we recommend a n1-standard-2 instance Install Docker &amp; docker-compose Install docker on your VM sudo apt-get update sudo apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common curl -fsSL download.docker.com/linux/debian/gpg | sudo apt-key add -- sudo add-apt-repository &quot;deb [arch=amd64] download.docker.com/linux/debian buster stable&quot; sudo apt-get update sudo apt-get install -y docker-ce docker-ce-cli containerd.io sudo usermod -a -G docker $USER Then install docker compose sudo apt-get -y install docker-compose-plugin docker compose version Then close your SSH connection and open it again to take into account the modifications.</description>
+    <pubDate>Mon, 01 Jul 2024 00:00:00 GMT</pubDate>
+  </item><item>
+    <title>GCP</title>
+    <link>https://quartz.jzhao.xyz/gcp/</link>
+    <guid>https://quartz.jzhao.xyz/gcp/</guid>
+    <description>Here you’ll find all my articles linked to GCP.</description>
+    <pubDate>Mon, 01 Jul 2024 00:00:00 GMT</pubDate>
   </item>
     </channel>
   </rss>
