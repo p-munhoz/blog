@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0">
     <channel>
-      <title>❄️ Pierre Munhoz blog</title>
+      <title>Pierre Munhoz blog ❄️</title>
       <link>https://quartz.jzhao.xyz</link>
-      <description>Last 10 notes on ❄️ Pierre Munhoz blog</description>
+      <description>Last 10 notes on Pierre Munhoz blog ❄️</description>
       <generator>Quartz -- quartz.jzhao.xyz</generator>
       <item>
     <title>How to backup Airbyte on Google Cloud Storage?</title>
-    <link>https://quartz.jzhao.xyz/airbyte/how-to-backup-airbyte-gcp</link>
-    <guid>https://quartz.jzhao.xyz/airbyte/how-to-backup-airbyte-gcp</guid>
+    <link>https://quartz.jzhao.xyz/Airbyte/how-to-backup-airbyte-gcp</link>
+    <guid>https://quartz.jzhao.xyz/Airbyte/how-to-backup-airbyte-gcp</guid>
     <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte. For a migration from one place to another Backup creation of the old instance Stop all the services docker-compose down Start only the database docker-compose up -d db Create the backup database file docker exec airbyte-db pg_dump -U docker airbyte &gt; airbyte_backup.sql Stop the service again docker-compose down When you’ve done that you have generated airbyte_backup.sql file.</description>
-    <pubDate>Mon, 30 Sep 2024 10:03:45 GMT</pubDate>
+    <pubDate>Mon, 30 Sep 2024 13:46:02 GMT</pubDate>
   </item><item>
     <title>Caviar-airways: discover the world through music</title>
     <link>https://quartz.jzhao.xyz/caviar-airways</link>
     <guid>https://quartz.jzhao.xyz/caviar-airways</guid>
     <description>Introduction I love music! I know, it’s not very original since a lot of people spend a lot of their time listening music. With a friend in my business school we did our thesis together by mixing our two passions: music (his) and computer science (mine).</description>
-    <pubDate>Mon, 30 Sep 2024 10:03:45 GMT</pubDate>
+    <pubDate>Mon, 30 Sep 2024 13:46:02 GMT</pubDate>
   </item><item>
     <title>Welcome to my engineering blog</title>
     <link>https://quartz.jzhao.xyz/</link>
     <guid>https://quartz.jzhao.xyz/</guid>
     <description>Who am I? Hello 👋, I’m Pierre Munhoz, a Senior Data Engineer with 6 years of experience. I enjoy cooking, running &amp; coding (especially when it involves playing with data).</description>
-    <pubDate>Mon, 30 Sep 2024 10:03:45 GMT</pubDate>
+    <pubDate>Mon, 30 Sep 2024 13:46:02 GMT</pubDate>
   </item><item>
     <title>case-study</title>
     <link>https://quartz.jzhao.xyz/interviews/case-study</link>
     <guid>https://quartz.jzhao.xyz/interviews/case-study</guid>
     <description></description>
-    <pubDate>Mon, 30 Sep 2024 10:03:45 GMT</pubDate>
+    <pubDate>Mon, 30 Sep 2024 13:46:02 GMT</pubDate>
   </item><item>
     <title>CI/CD pipeline implementation with GitHub Actions for dbt-core transformations</title>
     <link>https://quartz.jzhao.xyz/github-actions/ci-cd-github-actions-dbt-core</link>
@@ -43,9 +43,15 @@
     <pubDate>Tue, 27 Aug 2024 00:00:00 GMT</pubDate>
   </item><item>
     <title>How to host Airbyte on Google Cloud Platform?</title>
-    <link>https://quartz.jzhao.xyz/airbyte/how-to-setup-airbyte-gcp</link>
-    <guid>https://quartz.jzhao.xyz/airbyte/how-to-setup-airbyte-gcp</guid>
+    <link>https://quartz.jzhao.xyz/Airbyte/how-to-setup-airbyte-gcp</link>
+    <guid>https://quartz.jzhao.xyz/Airbyte/how-to-setup-airbyte-gcp</guid>
     <description>In this article I’ll show you how to setup Airbyte on Google Cloud Platform. Setup of Airbyte on the VM Create your Virtual Machine According to Airbyte documentation here the requirements: To test Airbyte, we recommend an e2.medium instance and provision at least 30GBs of disk per node To deploy Airbyte in a production environment, we recommend a n1-standard-2 instance Install Docker &amp; docker-compose Install docker on your VM sudo apt-get update sudo apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common curl -fsSL download.docker.com/linux/debian/gpg | sudo apt-key add -- sudo add-apt-repository &quot;deb [arch=amd64] download.docker.com/linux/debian buster stable&quot; sudo apt-get update sudo apt-get install -y docker-ce docker-ce-cli containerd.io sudo usermod -a -G docker $USER Then install docker compose sudo apt-get -y install docker-compose-plugin docker compose version Then close your SSH connection and open it again to take into account the modifications.</description>
+    <pubDate>Mon, 01 Jul 2024 00:00:00 GMT</pubDate>
+  </item><item>
+    <title>airbyte</title>
+    <link>https://quartz.jzhao.xyz/Airbyte/</link>
+    <guid>https://quartz.jzhao.xyz/Airbyte/</guid>
+    <description>Here you’ll find all my articles linked to Airbyte.</description>
     <pubDate>Mon, 01 Jul 2024 00:00:00 GMT</pubDate>
   </item><item>
     <title>GCP</title>
