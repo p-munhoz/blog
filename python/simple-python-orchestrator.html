@@ -6,7 +6,7 @@
 <p><a href="https://airflow.apache.org/" class="external" target="_blank">Apache Airflow<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a> has become the industry standard for workflow orchestration. Let’s examine its architecture to understand what makes an effective orchestration system:</p>
 <ol>
 <li>
-<p><strong>DAGs (Directed Acyclic Graphs)</strong>: The fundamental concept in Airflow. DAGs define the structure and dependencies of tasks in a workflow, including retry logic and failure handling.</p>
+<p><strong>DAGs (Directed Acyclic Graphs)</strong>: The fundamental concept in Airflow. DAGs define the structure, dependencies, and scheduling of tasks. Each task within a DAG can have retry logic and failure handling configured separately.</p>
 </li>
 <li>
 <p><strong>Web Server</strong>: Provides a user interface for visualizing DAGs, monitoring execution, and debugging workflows. This component is crucial for operational visibility.</p>
@@ -25,7 +25,7 @@
 <ul>
 <li><strong>SequentialExecutor</strong>: Executes tasks sequentially, suitable for development</li>
 <li><strong>LocalExecutor</strong>: Executes tasks in parallel on a single machine</li>
-<li><strong>CeleryExecutor</strong>: Distributes tasks across multiple workers using a message queue</li>
+<li><strong>CeleryExecutor</strong>: Distributes tasks across multiple workers using a broker/message queue, typically Redis or RabbitMQ.</li>
 <li><strong>KubernetesExecutor</strong>: Executes each task in a separate Kubernetes pod</li>
 </ul>
 </li>
