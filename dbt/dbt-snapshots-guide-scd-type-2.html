@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en"><head><title>Stop Losing Data History: Use dbt Snapshots for Easy SCD Type 2</title><meta charset="utf-8"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM Plex Mono&amp;family=Schibsted Grotesk:wght@400;700&amp;family=Source Sans Pro:ital,wght@0,400;0,600;1,400;1,600&amp;display=swap"/><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin="anonymous"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link rel="canonical" href="https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2"/><meta name="og:site_name" content="❄️ Pierre Munhoz engineering blog"/><meta property="og:title" content="Stop Losing Data History: Use dbt Snapshots for Easy SCD Type 2"/><meta property="og:type" content="website"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="Stop Losing Data History: Use dbt Snapshots for Easy SCD Type 2"/><meta name="twitter:description" content="Introduction Ever wondered what a customer’s status was last month, only to find your source database only shows the current state? Losing historical data is a common challenge in ..."/><meta property="og:description" content="Introduction Ever wondered what a customer’s status was last month, only to find your source database only shows the current state? Losing historical data is a common challenge in ..."/><meta property="og:image:type" content="image/webp"/><meta property="og:image:alt" content="Introduction Ever wondered what a customer’s status was last month, only to find your source database only shows the current state? Losing historical data is a common challenge in ..."/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:url" content="https://p-munhoz.github.io/blog/static/og-image.png"/><meta name="twitter:image" content="https://p-munhoz.github.io/blog/static/og-image.png"/><meta property="og:image" content="https://p-munhoz.github.io/blog/static/og-image.png"/><meta property="twitter:domain" content="p-munhoz.github.io/blog"/><meta property="og:url" content="https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2"/><meta property="twitter:url" content="https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2"/><link rel="icon" href="../static/icon.png"/><meta name="description" content="Introduction Ever wondered what a customer’s status was last month, only to find your source database only shows the current state? Losing historical data is a common challenge in ..."/><meta name="generator" content="Quartz"/><link href="../index.css" rel="stylesheet" type="text/css" spa-preserve/><link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet" type="text/css" spa-preserve/><script src="../prescript.js" type="application/javascript" spa-preserve></script><script type="application/javascript" spa-preserve>const fetchData = fetch("../static/contentIndex.json").then(data => data.json())</script></head><body data-slug="dbt/dbt-snapshots-guide-scd-type-2"><div id="quartz-root" class="page"><div id="quartz-body"><div class="left sidebar"><h2 class="page-title"><a href="..">❄️ Pierre Munhoz engineering blog</a></h2><div class="spacer mobile-only"></div><div class="search"><button class="search-button" id="search-button"><p>Search</p><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title>Search</title><g class="search-path" fill="none"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"></path><circle cx="8" cy="8" r="7"></circle></g></svg></button><div id="search-container"><div id="search-space"><input autocomplete="off" id="search-bar" name="search" type="text" aria-label="Search for something" placeholder="Search for something"/><div id="search-layout" data-preview="true"></div></div></div></div><button class="darkmode" id="darkmode"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="dayIcon" x="0px" y="0px" viewBox="0 0 35 35" style="enable-background:new 0 0 35 35" xml:space="preserve" aria-label="Dark mode"><title>Dark mode</title><path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="nightIcon" x="0px" y="0px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100" xml:space="preserve" aria-label="Light mode"><title>Light mode</title><path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571  C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23  c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369  c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65  c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"></path></svg></button><div class="explorer"><button type="button" id="mobile-explorer" class="collapsed hide-until-loaded" data-behavior="collapse" data-collapsed="collapsed" data-savestate="true" data-tree="[{&quot;path&quot;:&quot;airbyte&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;algorithm&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;dbt&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;gcp&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;github-actions&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;python&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;top-150-interviews&quot;,&quot;collapsed&quot;:true}]" data-mobile="true" aria-controls="explorer-content" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button><button type="button" id="desktop-explorer" class="title-button" data-behavior="collapse" data-collapsed="collapsed" data-savestate="true" data-tree="[{&quot;path&quot;:&quot;airbyte&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;algorithm&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;dbt&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;gcp&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;github-actions&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;python&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;top-150-interviews&quot;,&quot;collapsed&quot;:true}]" data-mobile="false" aria-controls="explorer-content" aria-expanded="true"><h2>Explorer</h2><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div id="explorer-content"><ul class="overflow" id="explorer-ul"><li><div class="folder-outer open"><ul style="padding-left:0;" class="content" data-folderul><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="airbyte"><button class="folder-button"><span class="folder-title">airbyte</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="airbyte"><li><a href="../airbyte/how-to-backup-airbyte-gcp" data-for="airbyte/how-to-backup-airbyte-gcp">How to backup Airbyte on Google Cloud Storage?</a></li><li><a href="../airbyte/how-to-setup-airbyte-gcp" data-for="airbyte/how-to-setup-airbyte-gcp">How to host Airbyte on Google Cloud Platform?</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="algorithm"><button class="folder-button"><span class="folder-title">algorithm</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="algorithm"><li><a href="../algorithm/boyer-moore-majority-vote" data-for="algorithm/boyer-moore-majority-vote">What is Boyer-Moore majority vote algorithm?</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="dbt"><button class="folder-button"><span class="folder-title">dbt</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="dbt"><li><a href="../dbt/dbt-core-beginner-guide" data-for="dbt/dbt-core-beginner-guide">Getting Started with dbt-core: A Beginner’s Guide to Data Transformation</a></li><li><a href="../dbt/dbt-documentation-best-practices" data-for="dbt/dbt-documentation-best-practices">Level Up Your dbt Docs: Best Practices for Clearer Data Lineage &amp; Team Clarity</a></li><li><a href="../dbt/dbt-snapshots-guide-scd-type-2" data-for="dbt/dbt-snapshots-guide-scd-type-2">Stop Losing Data History: Use dbt Snapshots for Easy SCD Type 2</a></li><li><a href="../dbt/dbt-core-source-vs-models" data-for="dbt/dbt-core-source-vs-models">Understanding the Difference Between Sources and Models in dbt-core</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="gcp"><button class="folder-button"><span class="folder-title">GCP</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="gcp"><li><a href="../gcp/how-to-delete-old-dbt-models-bigquery" data-for="gcp/how-to-delete-old-dbt-models-bigquery">How to remove deleted dbt models in BigQuery?</a></li><li><a href="../gcp/modernizing-data-lakes-data-warehouse-gcp" data-for="gcp/modernizing-data-lakes-data-warehouse-gcp">Modernizing Data Lakes and Data Warehouses with Google Cloud sum up</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="github-actions"><button class="folder-button"><span class="folder-title">github-actions</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="github-actions"><li><a href="../github-actions/ci-cd-github-actions-dbt-core" data-for="github-actions/ci-cd-github-actions-dbt-core">CI/CD pipeline implementation with GitHub Actions for dbt-core transformations</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="python"><button class="folder-button"><span class="folder-title">python</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="python"><li><a href="../python/simple-python-orchestrator" data-for="python/simple-python-orchestrator">Building a Simple Python Workflow Orchestrator: A Practical Guide</a></li><li><a href="../python/print-vs-logger" data-for="python/print-vs-logger">Why You Should Replace Print Statements with Logging in Python</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="top-150-interviews"><button class="folder-button"><span class="folder-title">top-150-interviews</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="top-150-interviews"><li><a href="../top-150-interviews/majority-element-algorithm" data-for="top-150-interviews/majority-element-algorithm">Majority Element</a></li></ul></div></li><li><div class="folder-outer "><ul style="padding-left:0;" class="content" data-folderul></ul></div></li><li><a href="../caviar-airways" data-for="caviar-airways">Caviar-airways: discover the world through music</a></li></ul></div></li><li id="explorer-end"></li></ul></div></div></div><div class="center"><div class="page-header"><div class="popover-hint"><nav class="breadcrumb-container" aria-label="breadcrumbs"><div class="breadcrumb-element"><a href="../">Home</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../dbt/">dbt</a><p> ❯ </p></div><div class="breadcrumb-element"><a href>Stop Losing Data History: Use dbt Snapshots for Easy SCD Type 2</a></div></nav><h1 class="article-title">Stop Losing Data History: Use dbt Snapshots for Easy SCD Type 2</h1><p show-comma="true" class="content-meta"><time datetime="2025-04-04T00:00:00.000Z">Apr 04, 2025</time><span>9 min read</span></p><ul class="tags"><li><a href="../tags/dbt" class="internal tag-link">dbt</a></li><li><a href="../tags/dbt-core" class="internal tag-link">dbt-core</a></li><li><a href="../tags/snapshots" class="internal tag-link">snapshots</a></li></ul></div></div><article class="popover-hint"><h2 id="introduction">Introduction<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#introduction" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Ever wondered what a customer’s status was last month, only to find your source database only shows the <strong>current state</strong>? Losing historical data is a common challenge in analytics. This article introduces dbt snapshots, a powerful feature for capturing changes over time and effortlessly building <strong>Slowly Changing Dimension</strong> (SCD) Type 2 tables. We’ll use a practical example to show you how snapshots work and how they unlock crucial historical insights.</p>
+<h2 id="example-scenario-tracking-customer-subscription-status-over-time">Example scenario: Tracking Customer Subscription Status Over Time<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#example-scenario-tracking-customer-subscription-status-over-time" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Imagine you’re working for a <strong>streaming service</strong> that manages customer subscriptions. The subscription status changes regularly between states such as <code>trial</code>, <code>active</code>, <code>paused</code>, or <code>cancelled</code>. Your source database table, <code>subscriptions</code>, only holds the current subscription state—so historical states get overwritten and lost.</p>
+<p>Let’s illustrate this clearly, step-by-step, and use this practical scenario to demonstrate how to use dbt snapshots.</p>
+<h2 id="1-the-problem-lost-historical-subscription-data">1. The Problem: Lost Historical Subscription Data<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#1-the-problem-lost-historical-subscription-data" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Suppose your subscription table initially looks like this:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>subscription_id</th><th>user_id</th><th>status</th><th>plan</th><th>updated_at</th></tr></thead><tbody><tr><td>101</td><td>9001</td><td>trial</td><td>basic</td><td>2024-01-10 08:00:00</td></tr><tr><td>102</td><td>9002</td><td>active</td><td>premium</td><td>2024-01-10 09:15:00</td></tr></tbody></table></div>
+<p>Later, a subscriber’s status updates from <code>trial</code> to <code>active</code>, and then later to <code>paused</code>. Each update overwrites the previous state:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>subscription_id</th><th>user_id</th><th>status</th><th>plan</th><th>updated_at</th></tr></thead><tbody><tr><td>101</td><td>9001</td><td>paused</td><td>basic</td><td>2024-02-01 12:00:00</td></tr><tr><td>102</td><td>9002</td><td>active</td><td>premium</td><td>2024-01-10 09:15:00</td></tr></tbody></table></div>
+<p>Here, we’ve lost valuable historical context—like when exactly the subscription transitioned between states, preventing us from calculating metrics like “average trial duration” or “time spent active.”</p>
+<h2 id="2-solution-using-dbt-snapshots">2. Solution: Using dbt Snapshots<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#2-solution-using-dbt-snapshots" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>We’ll configure dbt snapshots to capture every status change and keep historical records intact.</p>
+<h3 id="step-1-configure-the-snapshot-yaml">Step 1: Configure the Snapshot YAML<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#step-1-configure-the-snapshot-yaml" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Create this snapshot definition in your project (make sure you’ve defined your sources first):
+<strong><code>snapshots/subscription_snapshot.yml</code>:</strong></p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">snapshots</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">subscription_status_snapshot</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Tracks historical subscription status changes over time.&quot;</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    relation</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">source('streaming_service', 'subscriptions')</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      schema</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">snapshots</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      unique_key</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">subscription_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      strategy</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">timestamp</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      updated_at</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">updated_at</span></span>
+<span data-line> </span></code></pre></figure>
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><code>schema</code>: Separate snapshot schema (<code>snapshots</code>)</li>
+<li><code>unique_key</code>: Unique subscription identifier (<code>subscription_id</code>)</li>
+<li><code>strategy</code>: We use <code>timestamp</code> because <code>updated_at</code> reliably tracks updates</li>
+<li><code>updated_at</code>: We use the name of the field that contains the update timestamp (here <code>updated_at</code> too)</li>
+</ul>
+<h3 id="step-2-run-your-snapshot">Step 2: Run your Snapshot<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#step-2-run-your-snapshot" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Execute the snapshot command in your terminal:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> snapshot</span></span></code></pre></figure>
+<p>After the initial run, your snapshot table will look like this:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>subscription_id</th><th>user_id</th><th>status</th><th>plan</th><th>updated_at</th><th><strong>dbt_valid_from</strong></th><th>dbt_valid_to</th></tr></thead><tbody><tr><td>101</td><td>9001</td><td>trial</td><td>basic</td><td>2024-01-10 08:00:00</td><td>2024-01-10 08:00:00</td><td>null</td></tr><tr><td>102</td><td>9002</td><td>active</td><td>premium</td><td>2024-01-10 09:15:00</td><td>2024-01-10 09:15:00</td><td>null</td></tr></tbody></table></div>
+<h3 id="step-3-capture-updates-automatically">Step 3: Capture Updates Automatically<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#step-3-capture-updates-automatically" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>When subscription <code>101</code> changes from <code>trial</code> → <code>active</code> (Jan 17) → <code>paused</code> (Feb 1), re-running <code>dbt snapshot</code>  will capture history:</p>
+<p><strong>After running <code>dbt snapshot</code> again on Jan 17:</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>subscription_id</th><th>user_id</th><th>status</th><th>plan</th><th>updated_at</th><th><strong>dbt_valid_from</strong></th><th>dbt_valid_to</th></tr></thead><tbody><tr><td>101</td><td>9001</td><td>paused</td><td>basic</td><td>2024-01-10 08:00:00</td><td>2024-01-10 08:00:00</td><td>2024-01-17 14:30:00</td></tr><tr><td>101</td><td>9001</td><td>active</td><td>basic</td><td>2024-01-17 14:30:00</td><td>2024-01-17 14:30:00</td><td>null</td></tr><tr><td>102</td><td>9002</td><td>active</td><td>premium</td><td>2024-01-10 09:15:00</td><td>2024-01-10 09:15:00</td><td>null</td></tr></tbody></table></div>
+<p><strong>After running again on Feb 1:</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>subscription_id</th><th>user_id</th><th>status</th><th>plan</th><th>updated_at</th><th><strong>dbt_valid_from</strong></th><th>dbt_valid_to</th></tr></thead><tbody><tr><td>101</td><td>9001</td><td>paused</td><td>basic</td><td>2024-01-10 08:00:00</td><td>2024-01-10 08:00:00</td><td>2024-01-17 14:30:00</td></tr><tr><td>101</td><td>9001</td><td>active</td><td>basic</td><td>2024-01-17 14:30:00</td><td>2024-01-17 14:30:00</td><td>2024-02-01 12:00:00</td></tr><tr><td>101</td><td>9001</td><td>paused</td><td>basic</td><td>2024-02-01 12:00:00</td><td>2024-02-01 12:00:00</td><td>null</td></tr><tr><td>102</td><td>9002</td><td>active</td><td>premium</td><td>2024-01-10 09:15:00</td><td>2024-01-10 09:15:00</td><td>null</td></tr></tbody></table></div>
+<p>Now, your historical subscription changes are safely captured.</p>
+<h2 id="3-using-snapshot-data-in-analytical-models">3. Using Snapshot Data in Analytical Models<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#3-using-snapshot-data-in-analytical-models" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>You can easily query your snapshot data to calculate meaningful metrics.</p>
+<p>For instance, create a model to analyze subscription durations:
+<strong><code>models/subscription_durations.sql</code>:</strong></p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="sql" data-theme="github-light github-dark"><code data-language="sql" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">select</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  subscription_id,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  user_id,</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  status</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  plan,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  dbt_valid_from,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  dbt_valid_to,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  extract(</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">day</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> dbt_valid_to </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">-</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> dbt_valid_from) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> duration_days</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {{ ref(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'subscription_status_snapshot'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">order by</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> subscription_id, dbt_valid_from</span></span></code></pre></figure>
+<blockquote class="callout note" data-callout="note">
+<div class="callout-title">
+                  <div class="callout-icon"></div>
+                  <div class="callout-title-inner"><p>Warning </p></div>
+                  
+                </div>
+<div class="callout-content">
+<p>The <code>extract</code> function works with <code>PostgreSQL</code> but it’s pretty similar to <code>datediff</code> standard SQL functions.</p>
+</div>
+</blockquote>
+<p>This generates a table that lets you analyze how long each subscription stayed in a specific status:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>subscription_id</th><th>user_id</th><th>status</th><th>plan</th><th>dbt_valid_from</th><th>dbt_valid_to</th><th>duration_days</th></tr></thead><tbody><tr><td>101</td><td>9001</td><td>trial</td><td>basic</td><td>2024-01-10</td><td>2024-01-17</td><td>7 days</td></tr><tr><td>101</td><td>9001</td><td>active</td><td>basic</td><td>2024-01-17</td><td>2024-02-01</td><td>15 days</td></tr><tr><td>101</td><td>9001</td><td>paused</td><td>basic</td><td>2024-02-01</td><td>null</td><td>current</td></tr><tr><td>102</td><td>9002</td><td>active</td><td>premium</td><td>2024-01-10</td><td>null</td><td>current</td></tr></tbody></table></div>
+<p>To be more precise with the given model duration_days just gives an integer or null but in a dashboarding solution we can add the “days” and replace the null by “current”.</p>
+<h2 id="4-alternative-snapshot-strategy-check-columns">4. Alternative Snapshot Strategy (Check Columns)<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#4-alternative-snapshot-strategy-check-columns" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Sometimes, your source data <strong>doesn’t reliably track timestamps</strong> or simply lacks an <code>updated_at</code> column entirely. In these scenarios, using the <code>check</code> strategy makes sense.</p>
+<h4 id="example-scenario-tracking-product-catalog-changes">Example scenario: <strong>Tracking Product Catalog Changes</strong><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#example-scenario-tracking-product-catalog-changes" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>Imagine you’re maintaining a product catalog for an online store. Your source table, <code>product_catalog</code>, gets updated frequently. Columns like <code>price</code>, <code>availability</code>, and <code>description</code> often change—but the source table <strong>doesn’t record when these updates happen</strong>. It only stores the latest state, without timestamps:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>product_id</th><th>product_name</th><th>price</th><th>availability</th><th>description</th></tr></thead><tbody><tr><td>201</td><td>Running Shoes</td><td>99.99</td><td>in stock</td><td>Comfortable running shoes</td></tr><tr><td>202</td><td>Yoga Mat</td><td>45.00</td><td>in stock</td><td>Eco-friendly yoga mat</td></tr></tbody></table></div>
+<p>Later, the price and availability of the Running Shoes change, but you have no timestamp of this update—only the current state is available:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>product_id</th><th>product_name</th><th>price</th><th>availability</th><th>description</th></tr></thead><tbody><tr><td>201</td><td>Running Shoes</td><td>89.99</td><td>out of stock</td><td>Comfortable running shoes</td></tr><tr><td>202</td><td>Yoga Mat</td><td>45.00</td><td>in stock</td><td>Eco-friendly yoga mat</td></tr></tbody></table></div>
+<p>Without snapshots, <strong>the historical price (<code>99.99</code>) and availability (<code>in stock</code>) are lost forever</strong>.</p>
+<h4 id="using-the-check-strategy-to-solve-this">Using the <code>check</code> strategy to solve this<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#using-the-check-strategy-to-solve-this" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>To capture changes explicitly on specific columns without relying on timestamps, configure your snapshot as follows:</p>
+<p><strong><code>snapshots/product_catalog_snapshot.yml</code>:</strong></p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">snapshots</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">product_catalog_snapshot</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Tracks historical changes in product details.&quot;</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    relation</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">source('online_store', 'product_catalog')</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      schema</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">snapshots</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      unique_key</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">product_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      strategy</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">check</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      check_cols</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        - </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">price</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        - </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">availability</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        - </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">description</span></span>
+<span data-line> </span></code></pre></figure>
+<p><strong>Explanation:</strong></p>
+<ul>
+<li><strong>strategy: check</strong> explicitly tracks changes by comparing listed columns between snapshot runs.</li>
+<li><strong>check_cols</strong>: lists the columns to monitor. Any change in these columns triggers the snapshot to record a new historical row.</li>
+</ul>
+<p>If you want to check all columns, you can put <code>check_cols: 'all'</code> instead.</p>
+<h3 id="snapshot-results-after-running">Snapshot Results after Running<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#snapshot-results-after-running" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Initially, running <code>dbt snapshot</code> creates the first snapshot records:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>product_id</th><th>product_name</th><th>price</th><th>availability</th><th>description</th><th>dbt_valid_from</th><th>dbt_valid_to</th></tr></thead><tbody><tr><td>201</td><td>Running Shoes</td><td>99.99</td><td>in stock</td><td>Comfortable running shoes</td><td>2024-01-10 10:00:00</td><td>null</td></tr><tr><td>202</td><td>Yoga Mat</td><td>45.00</td><td>in stock</td><td>Eco-friendly yoga mat</td><td>2024-01-10 10:00:00</td><td>null</td></tr></tbody></table></div>
+<p>After changes occur (price drops, availability changes) and you run snapshots again, dbt captures this update explicitly:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>product_id</th><th>product_name</th><th>price</th><th>availability</th><th>description</th><th>dbt_valid_from</th><th>dbt_valid_to</th></tr></thead><tbody><tr><td>201</td><td>Running Shoes</td><td>99.99</td><td>in stock</td><td>Comfortable running shoes</td><td>2024-01-10 10:00:00</td><td>2024-01-15 15:00:00</td></tr><tr><td>201</td><td>Running Shoes</td><td>89.99</td><td>out of stock</td><td>Comfortable running shoes</td><td>2024-01-15 15:00:00</td><td>null</td></tr><tr><td>202</td><td>Yoga Mat</td><td>45.00</td><td>in stock</td><td>Eco-friendly yoga mat</td><td>2024-01-10 10:00:00</td><td>null</td></tr></tbody></table></div>
+<p>Here’s what happened:</p>
+<ul>
+<li><strong>dbt detected</strong> that product 201’s <code>price</code> and <code>availability</code> changed.</li>
+<li>It automatically <strong>closed</strong> the previous snapshot (<code>dbt_valid_to</code> set) and created a <strong>new row</strong> capturing the latest state.</li>
+</ul>
+<p><strong>You could be wondering:</strong>
+<em>“Wait how the <code>dbt_valid_from</code> and <code>dbt_valid_to</code> is defined if there is not timestamp”</em></p>
+<p>Excellent question! When using the check strategy without an explicit <code>updated_at</code> timestamp, dbt automatically uses the time of the snapshot run (<code>current timestamp</code>) to fill <code>dbt_valid_from</code> and <code>dbt_valid_to</code>. If you do have an <code>updated_at</code> column, you can optionally provide it, allowing dbt to use that timestamp instead.</p>
+<h4 id="why-this-works">Why this works<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#why-this-works" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>The <code>check</code> strategy doesn’t rely on timestamps from your data. Instead, it compares column values between snapshot executions. This ensures historical tracking, even when your source data doesn’t contain update timestamps.</p>
+<p>The <code>check</code> strategy can be way less efficient since you’ll compare all columns declared between the last snapshot version and the current data in the source, keep that in mind.</p>
+<h2 id="5-advanced-handling-subscription-deletions">5. Advanced: Handling Subscription Deletions<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#5-advanced-handling-subscription-deletions" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>If you want to track deletions explicitly by using <code>hard_deletes: new_record</code>:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">snapshots</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">subscription_snapshot_with_deletes</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">	description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Tracks historical subscription status changes over time.&quot;</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    relation</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">source('streaming_service', 'subscriptions')</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      schema</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">snapshots</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      unique_key</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">subscription_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      strategy</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">timestamp</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      updated_at</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">updated_at</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      hard_deletes</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">new_record</span></span>
+<span data-line> </span></code></pre></figure>
+<p>This configuration ensures deleted subscriptions create new rows marked explicitly as deleted, preserving history.</p>
+<p>The <code>hard_deletes</code> can have three values:</p>
+<ul>
+<li><code>ignore</code>: it’s the default value, if the record is deleted, nothing happens</li>
+<li><code>invalidate</code>: same as <code>invalidate_hard_deletes=true</code> model parameter (deprecated), where the record is deleted it’ll change the last <code>dbt_valid_to</code> value to replace the <code>null</code> by the timestamp of the last run.</li>
+<li><code>new_record</code>:  it’ll add <code>dbt_is_deleted</code> boolean column</li>
+</ul>
+<h3 id="practical-example-with-new_record">Practical Example with <code>new_record</code>:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#practical-example-with-new_record" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Imagine the initial subscription snapshot:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>subscription_id</th><th>user_id</th><th>status</th><th>plan</th><th>updated_at</th><th>dbt_valid_from</th><th>dbt_valid_to</th><th>dbt_is_deleted</th></tr></thead><tbody><tr><td>101</td><td>9001</td><td>active</td><td>basic</td><td>2024-01-10 08:00:00</td><td>2024-01-10 08:00:00</td><td>null</td><td>false</td></tr><tr><td>102</td><td>9002</td><td>paused</td><td>premium</td><td>2024-01-12 09:15:00</td><td>2024-01-12 09:15:00</td><td>null</td><td>false</td></tr></tbody></table></div>
+<p>Then subscription <code>101</code> gets explicitly deleted from your source database on <code>2024-02-01 12:00:00</code>. After running <code>dbt snapshot</code> again, you’ll have:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>subscription_id</th><th>user_id</th><th>status</th><th>plan</th><th>updated_at</th><th>dbt_valid_from</th><th>dbt_valid_to</th><th>dbt_is_deleted</th></tr></thead><tbody><tr><td>101</td><td>9001</td><td>active</td><td>basic</td><td>2024-01-10 08:00:00</td><td>2024-01-10 08:00:00</td><td>2024-02-01 12:00:00</td><td>false</td></tr><tr><td>101</td><td>9001</td><td>active</td><td>basic</td><td>2024-02-01 12:00:00</td><td>2024-02-01 12:00:00</td><td>null</td><td>true</td></tr><tr><td>102</td><td>9002</td><td>paused</td><td>premium</td><td>2024-01-12 09:15:00</td><td>2024-01-12 09:15:00</td><td>null</td><td>false</td></tr></tbody></table></div>
+<h3 id="what-happened">What happened?<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#what-happened" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ul>
+<li>dbt detected subscription <code>101</code> no longer exists in your source.</li>
+<li>It <strong>closed</strong> the previous valid record (set <code>dbt_valid_to</code> to the snapshot run timestamp).</li>
+<li>It added a <strong>new record</strong> explicitly marking it as deleted (<code>dbt_is_deleted=true</code>).</li>
+</ul>
+<p>This configuration gives you clear visibility and control over deleted records, preserving historical context and enabling deeper analysis (e.g., retention analysis, churn detection).</p>
+<h2 id="6-how-to-apply-transformations-in-snapshots">6. How to Apply Transformations in Snapshots?<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#6-how-to-apply-transformations-in-snapshots" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The best practice is to avoid transforming the data in snapshots. If however you’d need to filter or to deduplicate the data from the source (which is quite important for a good capture change), you should define an ephemeral model and use it as reference in the snapshot configuration.</p>
+<p>To apply transformations you need to create a model (i.e. you model needs to be in <code>models</code> folder) with an ephemeral materialized configuration</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="sql" data-theme="github-light github-dark"><code data-language="sql" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">{{ config(materialized</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'ephemeral'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">select distinct</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (product_id) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> </span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {{ source(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'catalog'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'raw_products'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">order by</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> product_id</span></span>
+<span data-line> </span></code></pre></figure>
+<p>Then you can use this configuration
+<strong><code>snapshots/products_snapshots.yml</code>:</strong></p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">snapshots</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">products_snapshot</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Tracks historical products changes over time.&quot;</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    relation</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ref('ephemeral_products_snapshots')</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      schema</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">snapshots</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      unique_key</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">product_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      strategy</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">check</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      check_cols</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'all'</span></span>
+<span data-line> </span></code></pre></figure>
+<h2 id="7-ensure-uniqueness-of-the-unique_key">7. Ensure uniqueness of the <code>unique_key</code><a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#7-ensure-uniqueness-of-the-unique_key" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>To avoid bad surprises, it’s highly recommended to create a <code>unique</code> test on the source on the <code>unique_key</code>. Indeed, if you don’t have a single row per <code>unique_key</code> you will witness weird behaviours from dbt snapshot. It can comprise the history and you will get trouble retrieving the real data.</p>
+<h2 id="8-bonus-snapshots-meta-fields">8. Bonus: Snapshots meta-fields<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#8-bonus-snapshots-meta-fields" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>We previously talked about <code>dbt_valid_from</code>, <code>dbt_valid_to</code> and <code>dbt_is_deleted</code>.</p>
+<p>There are also two others fields:</p>
+<ul>
+<li><code>dbt_scd_id</code>: a unique key generated for each snapshot row</li>
+<li><code>dbt_updated_at</code>: equal to the <code>updated_at</code> timestamp of the source</li>
+</ul>
+<h2 id="key-takeaways">Key Takeaways:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#key-takeaways" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<ul>
+<li><strong>Implement SCD Type 2 Effortlessly:</strong> dbt snapshots are the go-to method for building Slowly Changing Dimension Type 2 tables, automatically tracking historical changes in your source data.</li>
+<li><strong>Choose the Right Strategy:</strong> Use the <code>timestamp</code> strategy if your source has a reliable update timestamp column (<code>updated_at</code>). Opt for the <code>check</code> strategy (monitoring specific columns or <code>all</code>) when timestamps are unreliable or absent.</li>
+<li><strong>Unlock Historical Insights:</strong> Snapshot data, with its <code>dbt_valid_from</code> and <code>dbt_valid_to</code> columns, enables powerful time-based analysis, such as customer lifecycle tracking or product price history.</li>
+<li><strong>Configuration Matters:</strong> Pay close attention to the <code>unique_key</code> (ensure it’s truly unique in the source!) and consider options like <code>hard_deletes</code> to manage record deletions appropriately.</li>
+<li><strong>Keep Snapshots Clean:</strong> Apply necessary transformations (like deduplication or filtering) <em>before</em> the snapshot using ephemeral models, rather than within the snapshot definition itself.</li>
+</ul>
+<h2 id="conclusion">Conclusion<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#conclusion" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>As we’ve seen, dbt snapshots provide a robust and declarative way to capture data history, transforming the challenge of building Slowly Changing Dimensions from a complex coding task into a simple configuration. By leveraging either the <code>timestamp</code> or <code>check</code> strategy, you can reliably track changes in your sources and unlock deeper historical analysis. You’re now equipped to start preserving valuable historical context in your own dbt projects!</p>
+<p>👉 The full source code for the project is available on GitHub:<br/>
+📂 <a href="https://github.com/p-munhoz/dbt-snapshots" class="external" target="_blank">p-munhoz/dbt-snapshots<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></p></article><hr/><div class="page-footer"><div class="newsletter-container"><iframe src="https://embeds.beehiiv.com/31677076-bfa0-485d-80e7-72c5f7d11891" data-test-id="beehiiv-embed" width="100%" height="320" frameborder="0" scrolling="no" style="border-radius:4px;border:2px solid #e5e7eb;margin:0px;background-color:transparent;"></iframe></div><div class="giscus" data-repo="p-munhoz/blog" data-repo-id="R_kgDOMqDU7w" data-category="Announcements" data-category-id="DIC_kwDOMqDU784CoOY9" data-mapping="url" data-strict="1" data-reactions-enabled="1" data-input-position="bottom" data-light-theme="light" data-dark-theme="dark" data-theme-url="https://p-munhoz.github.io/blog/static/giscus"></div></div></div><div class="right sidebar"><div class="graph"><h3>Graph View</h3><div class="graph-outer"><div id="graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:1,&quot;scale&quot;:1.1,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:false,&quot;enableRadial&quot;:false}"></div><button id="global-graph-icon" aria-label="Global Graph"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 55 55" fill="currentColor" xml:space="preserve"><path d="M49,0c-3.309,0-6,2.691-6,6c0,1.035,0.263,2.009,0.726,2.86l-9.829,9.829C32.542,17.634,30.846,17,29,17
+                s-3.542,0.634-4.898,1.688l-7.669-7.669C16.785,10.424,17,9.74,17,9c0-2.206-1.794-4-4-4S9,6.794,9,9s1.794,4,4,4
+                c0.74,0,1.424-0.215,2.019-0.567l7.669,7.669C21.634,21.458,21,23.154,21,25s0.634,3.542,1.688,4.897L10.024,42.562
+                C8.958,41.595,7.549,41,6,41c-3.309,0-6,2.691-6,6s2.691,6,6,6s6-2.691,6-6c0-1.035-0.263-2.009-0.726-2.86l12.829-12.829
+                c1.106,0.86,2.44,1.436,3.898,1.619v10.16c-2.833,0.478-5,2.942-5,5.91c0,3.309,2.691,6,6,6s6-2.691,6-6c0-2.967-2.167-5.431-5-5.91
+                v-10.16c1.458-0.183,2.792-0.759,3.898-1.619l7.669,7.669C41.215,39.576,41,40.26,41,41c0,2.206,1.794,4,4,4s4-1.794,4-4
+                s-1.794-4-4-4c-0.74,0-1.424,0.215-2.019,0.567l-7.669-7.669C36.366,28.542,37,26.846,37,25s-0.634-3.542-1.688-4.897l9.665-9.665
+                C46.042,11.405,47.451,12,49,12c3.309,0,6-2.691,6-6S52.309,0,49,0z M11,9c0-1.103,0.897-2,2-2s2,0.897,2,2s-0.897,2-2,2
+                S11,10.103,11,9z M6,51c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S8.206,51,6,51z M33,49c0,2.206-1.794,4-4,4s-4-1.794-4-4
+                s1.794-4,4-4S33,46.794,33,49z M29,31c-3.309,0-6-2.691-6-6s2.691-6,6-6s6,2.691,6,6S32.309,31,29,31z M47,41c0,1.103-0.897,2-2,2
+                s-2-0.897-2-2s0.897-2,2-2S47,39.897,47,41z M49,10c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S51.206,10,49,10z"></path></svg></button></div><div id="global-graph-outer"><div id="global-graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:-1,&quot;scale&quot;:0.9,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:true,&quot;enableRadial&quot;:true}"></div></div></div><div class="toc desktop-only"><button type="button" id="toc" class aria-controls="toc-content" aria-expanded="true"><h3>Table of Contents</h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div id="toc-content" class><ul class="overflow"><li class="depth-0"><a href="#introduction" data-for="introduction">Introduction</a></li><li class="depth-0"><a href="#example-scenario-tracking-customer-subscription-status-over-time" data-for="example-scenario-tracking-customer-subscription-status-over-time">Example scenario: Tracking Customer Subscription Status Over Time</a></li><li class="depth-0"><a href="#1-the-problem-lost-historical-subscription-data" data-for="1-the-problem-lost-historical-subscription-data">1. The Problem: Lost Historical Subscription Data</a></li><li class="depth-0"><a href="#2-solution-using-dbt-snapshots" data-for="2-solution-using-dbt-snapshots">2. Solution: Using dbt Snapshots</a></li><li class="depth-1"><a href="#step-1-configure-the-snapshot-yaml" data-for="step-1-configure-the-snapshot-yaml">Step 1: Configure the Snapshot YAML</a></li><li class="depth-1"><a href="#step-2-run-your-snapshot" data-for="step-2-run-your-snapshot">Step 2: Run your Snapshot</a></li><li class="depth-1"><a href="#step-3-capture-updates-automatically" data-for="step-3-capture-updates-automatically">Step 3: Capture Updates Automatically</a></li><li class="depth-0"><a href="#3-using-snapshot-data-in-analytical-models" data-for="3-using-snapshot-data-in-analytical-models">3. Using Snapshot Data in Analytical Models</a></li><li class="depth-0"><a href="#4-alternative-snapshot-strategy-check-columns" data-for="4-alternative-snapshot-strategy-check-columns">4. Alternative Snapshot Strategy (Check Columns)</a></li><li class="depth-1"><a href="#snapshot-results-after-running" data-for="snapshot-results-after-running">Snapshot Results after Running</a></li><li class="depth-0"><a href="#5-advanced-handling-subscription-deletions" data-for="5-advanced-handling-subscription-deletions">5. Advanced: Handling Subscription Deletions</a></li><li class="depth-1"><a href="#practical-example-with-new_record" data-for="practical-example-with-new_record">Practical Example with new_record:</a></li><li class="depth-1"><a href="#what-happened" data-for="what-happened">What happened?</a></li><li class="depth-0"><a href="#6-how-to-apply-transformations-in-snapshots" data-for="6-how-to-apply-transformations-in-snapshots">6. How to Apply Transformations in Snapshots?</a></li><li class="depth-0"><a href="#7-ensure-uniqueness-of-the-unique_key" data-for="7-ensure-uniqueness-of-the-unique_key">7. Ensure uniqueness of the unique_key</a></li><li class="depth-0"><a href="#8-bonus-snapshots-meta-fields" data-for="8-bonus-snapshots-meta-fields">8. Bonus: Snapshots meta-fields</a></li><li class="depth-0"><a href="#key-takeaways" data-for="key-takeaways">Key Takeaways:</a></li><li class="depth-0"><a href="#conclusion" data-for="conclusion">Conclusion</a></li></ul></div></div></div><footer class><p>Created with ❤️ by <a href="https://pierre-munhoz-portfolio.vercel.app/" target="_blank">Pierre Munhoz</a> © 2025</p><ul><li><a href="https://github.com/p-munhoz/" target="_blank">GitHub</a></li><li><a href="https://www.linkedin.com/in/pierre-munhoz/" target="_blank">LinkedIn</a></li></ul></footer></div></div></body><script type="application/javascript">function c(){let t=this.parentElement;t.classList.toggle("is-collapsed");let l=t.classList.contains("is-collapsed")?this.scrollHeight:t.scrollHeight;t.style.maxHeight=l+"px";let o=t,e=t.parentElement;for(;e;){if(!e.classList.contains("callout"))return;let n=e.classList.contains("is-collapsed")?e.scrollHeight:e.scrollHeight+o.scrollHeight;e.style.maxHeight=n+"px",o=e,e=e.parentElement}}function i(){let t=document.getElementsByClassName("callout is-collapsible");for(let s of t){let l=s.firstElementChild;if(l){l.addEventListener("click",c),window.addCleanup(()=>l.removeEventListener("click",c));let e=s.classList.contains("is-collapsed")?l.scrollHeight:s.scrollHeight;s.style.maxHeight=e+"px"}}}document.addEventListener("nav",i);window.addEventListener("resize",i);
+</script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/copy-tex.min.js" type="application/javascript"></script><script src="../postscript.js" type="module"></script></html>

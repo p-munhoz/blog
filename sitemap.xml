@@ -1,15 +1,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url>
     <loc>https://p-munhoz.github.io/blog/airbyte/how-to-backup-airbyte-gcp</loc>
-    <lastmod>2025-04-02T18:12:10.561Z</lastmod>
+    <lastmod>2025-04-04T14:02:33.102Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/airbyte/how-to-setup-airbyte-gcp</loc>
     <lastmod>2024-07-01T00:00:00.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/algorithm/boyer-moore-majority-vote</loc>
-    <lastmod>2025-04-02T18:12:10.561Z</lastmod>
+    <lastmod>2025-04-04T14:02:33.102Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/caviar-airways</loc>
-    <lastmod>2025-04-02T18:12:10.561Z</lastmod>
+    <lastmod>2025-04-04T14:02:33.102Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/dbt/dbt-core-beginner-guide</loc>
     <lastmod>2025-02-06T00:00:00.000Z</lastmod>
@@ -19,6 +19,9 @@
   </url><url>
     <loc>https://p-munhoz.github.io/blog/dbt/dbt-documentation-best-practices</loc>
     <lastmod>2025-04-01T00:00:00.000Z</lastmod>
+  </url><url>
+    <loc>https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2</loc>
+    <lastmod>2025-04-04T00:00:00.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/gcp/how-to-delete-old-dbt-models-bigquery</loc>
     <lastmod>2024-08-27T00:00:00.000Z</lastmod>
@@ -33,7 +36,7 @@
     <lastmod>2024-09-28T00:00:00.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/</loc>
-    <lastmod>2025-04-02T18:12:10.565Z</lastmod>
+    <lastmod>2025-04-04T14:02:33.107Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/python/print-vs-logger</loc>
     <lastmod>2025-01-03T00:00:00.000Z</lastmod>
@@ -42,5 +45,5 @@
     <lastmod>2025-03-19T00:00:00.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/top-150-interviews/majority-element-algorithm</loc>
-    <lastmod>2025-04-02T18:12:10.565Z</lastmod>
+    <lastmod>2025-04-04T14:02:33.107Z</lastmod>
   </url></urlset>

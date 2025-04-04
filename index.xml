@@ -10,31 +10,37 @@
     <link>https://p-munhoz.github.io/blog/</link>
     <guid>https://p-munhoz.github.io/blog/</guid>
     <description>Who am I? Hello 👋, I’m Pierre Munhoz, a Senior Data Engineer with 6 years of experience. I enjoy cooking, running &amp; coding (especially when it involves playing with data).</description>
-    <pubDate>Wed, 02 Apr 2025 18:12:10 GMT</pubDate>
+    <pubDate>Fri, 04 Apr 2025 14:02:33 GMT</pubDate>
   </item><item>
     <title>Majority Element</title>
     <link>https://p-munhoz.github.io/blog/top-150-interviews/majority-element-algorithm</link>
     <guid>https://p-munhoz.github.io/blog/top-150-interviews/majority-element-algorithm</guid>
     <description>Problem statement Given an array nums of size n, return the majority element. The majority element is the element that appears more than ⌊n / 2⌋ times.</description>
-    <pubDate>Wed, 02 Apr 2025 18:12:10 GMT</pubDate>
+    <pubDate>Fri, 04 Apr 2025 14:02:33 GMT</pubDate>
   </item><item>
     <title>How to backup Airbyte on Google Cloud Storage?</title>
     <link>https://p-munhoz.github.io/blog/airbyte/how-to-backup-airbyte-gcp</link>
     <guid>https://p-munhoz.github.io/blog/airbyte/how-to-backup-airbyte-gcp</guid>
     <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte. For a migration from one place to another Backup creation of the old instance Stop all the services docker-compose down Start only the database docker-compose up -d db Create the backup database file docker exec airbyte-db pg_dump -U docker airbyte &gt; airbyte_backup.sql Stop the service again docker-compose down When you’ve done that you have generated airbyte_backup.sql file.</description>
-    <pubDate>Wed, 02 Apr 2025 18:12:10 GMT</pubDate>
+    <pubDate>Fri, 04 Apr 2025 14:02:33 GMT</pubDate>
   </item><item>
     <title>What is Boyer-Moore majority vote algorithm?</title>
     <link>https://p-munhoz.github.io/blog/algorithm/boyer-moore-majority-vote</link>
     <guid>https://p-munhoz.github.io/blog/algorithm/boyer-moore-majority-vote</guid>
     <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using ...</description>
-    <pubDate>Wed, 02 Apr 2025 18:12:10 GMT</pubDate>
+    <pubDate>Fri, 04 Apr 2025 14:02:33 GMT</pubDate>
   </item><item>
     <title>Caviar-airways: discover the world through music</title>
     <link>https://p-munhoz.github.io/blog/caviar-airways</link>
     <guid>https://p-munhoz.github.io/blog/caviar-airways</guid>
     <description>Introduction I love music! I know, it’s not very original since a lot of people spend a lot of their time listening music. With a friend in my business school we did our thesis together by mixing our two passions: music (his) and computer science (mine).</description>
-    <pubDate>Wed, 02 Apr 2025 18:12:10 GMT</pubDate>
+    <pubDate>Fri, 04 Apr 2025 14:02:33 GMT</pubDate>
+  </item><item>
+    <title>Stop Losing Data History: Use dbt Snapshots for Easy SCD Type 2</title>
+    <link>https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2</link>
+    <guid>https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2</guid>
+    <description>Introduction Ever wondered what a customer’s status was last month, only to find your source database only shows the current state? Losing historical data is a common challenge in ...</description>
+    <pubDate>Fri, 04 Apr 2025 00:00:00 GMT</pubDate>
   </item><item>
     <title>Level Up Your dbt Docs: Best Practices for Clearer Data Lineage &amp; Team Clarity</title>
     <link>https://p-munhoz.github.io/blog/dbt/dbt-documentation-best-practices</link>
@@ -59,12 +65,6 @@
     <guid>https://p-munhoz.github.io/blog/dbt/dbt-core-beginner-guide</guid>
     <description>What is dbt? dbt (data build tools) is an open-source CLI (command line tool) that helps analysts and engineers transform data in their warehouse more effectively (from Wikipedia ...</description>
     <pubDate>Thu, 06 Feb 2025 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>Why You Should Replace Print Statements with Logging in Python</title>
-    <link>https://p-munhoz.github.io/blog/python/print-vs-logger</link>
-    <guid>https://p-munhoz.github.io/blog/python/print-vs-logger</guid>
-    <description>When you start learning programming, the print function is often the first tool used to display output. However, as you transition to writing production-grade code, you’ll encounter the need for a more robust and flexible solution: logging.</description>
-    <pubDate>Fri, 03 Jan 2025 00:00:00 GMT</pubDate>
   </item>
     </channel>
   </rss>
