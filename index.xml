@@ -6,64 +6,64 @@
       <description>Last 10 notes on ❄️ Pierre Munhoz engineering blog</description>
       <generator>Quartz -- quartz.jzhao.xyz</generator>
       <item>
-    <title>Welcome to my engineering blog</title>
-    <link>https://p-munhoz.github.io/blog/</link>
-    <guid>https://p-munhoz.github.io/blog/</guid>
-    <description>Who am I? Hello 👋, I’m Pierre Munhoz, a Senior Data Engineer with 6 years of experience. I enjoy cooking, running &amp; coding (especially when it involves playing with data).</description>
-    <pubDate>Fri, 04 Apr 2025 14:02:33 GMT</pubDate>
-  </item><item>
     <title>Majority Element</title>
     <link>https://p-munhoz.github.io/blog/top-150-interviews/majority-element-algorithm</link>
     <guid>https://p-munhoz.github.io/blog/top-150-interviews/majority-element-algorithm</guid>
     <description>Problem statement Given an array nums of size n, return the majority element. The majority element is the element that appears more than ⌊n / 2⌋ times.</description>
-    <pubDate>Fri, 04 Apr 2025 14:02:33 GMT</pubDate>
+    <pubDate>Mon, 07 Apr 2025 13:01:48 GMT</pubDate>
+  </item><item>
+    <title>Welcome to my engineering blog</title>
+    <link>https://p-munhoz.github.io/blog/</link>
+    <guid>https://p-munhoz.github.io/blog/</guid>
+    <description>Meet Pierre Munhoz, a Senior Data Engineer with 6 years of experience. Explore his engineering blog covering data analysis, data engineering, coding, and personal interests like cooking and running.</description>
+    <pubDate>Mon, 07 Apr 2025 13:01:48 GMT</pubDate>
   </item><item>
     <title>How to backup Airbyte on Google Cloud Storage?</title>
     <link>https://p-munhoz.github.io/blog/airbyte/how-to-backup-airbyte-gcp</link>
     <guid>https://p-munhoz.github.io/blog/airbyte/how-to-backup-airbyte-gcp</guid>
     <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte. For a migration from one place to another Backup creation of the old instance Stop all the services docker-compose down Start only the database docker-compose up -d db Create the backup database file docker exec airbyte-db pg_dump -U docker airbyte &gt; airbyte_backup.sql Stop the service again docker-compose down When you’ve done that you have generated airbyte_backup.sql file.</description>
-    <pubDate>Fri, 04 Apr 2025 14:02:33 GMT</pubDate>
+    <pubDate>Mon, 07 Apr 2025 13:01:48 GMT</pubDate>
   </item><item>
     <title>What is Boyer-Moore majority vote algorithm?</title>
     <link>https://p-munhoz.github.io/blog/algorithm/boyer-moore-majority-vote</link>
     <guid>https://p-munhoz.github.io/blog/algorithm/boyer-moore-majority-vote</guid>
     <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using ...</description>
-    <pubDate>Fri, 04 Apr 2025 14:02:33 GMT</pubDate>
+    <pubDate>Mon, 07 Apr 2025 13:01:48 GMT</pubDate>
   </item><item>
     <title>Caviar-airways: discover the world through music</title>
     <link>https://p-munhoz.github.io/blog/caviar-airways</link>
     <guid>https://p-munhoz.github.io/blog/caviar-airways</guid>
-    <description>Introduction I love music! I know, it’s not very original since a lot of people spend a lot of their time listening music. With a friend in my business school we did our thesis together by mixing our two passions: music (his) and computer science (mine).</description>
-    <pubDate>Fri, 04 Apr 2025 14:02:33 GMT</pubDate>
+    <description>Explore Caviar-airways, a unique website blending music and travel. Discover Spotify playlists pinned on an interactive map, built with HTML, CSS, and vanilla JS.</description>
+    <pubDate>Mon, 07 Apr 2025 13:01:48 GMT</pubDate>
   </item><item>
     <title>Stop Losing Data History: Use dbt Snapshots for Easy SCD Type 2</title>
     <link>https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2</link>
     <guid>https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2</guid>
-    <description>Introduction Ever wondered what a customer’s status was last month, only to find your source database only shows the current state? Losing historical data is a common challenge in ...</description>
+    <description>Prevent data history loss using dbt snapshots. This guide explains how to implement Slowly Changing Dimension (SCD) Type 2 tables easily, track changes over time (like subscription status), and gain historical insights.</description>
     <pubDate>Fri, 04 Apr 2025 00:00:00 GMT</pubDate>
   </item><item>
     <title>Level Up Your dbt Docs: Best Practices for Clearer Data Lineage &amp; Team Clarity</title>
     <link>https://p-munhoz.github.io/blog/dbt/dbt-documentation-best-practices</link>
     <guid>https://p-munhoz.github.io/blog/dbt/dbt-documentation-best-practices</guid>
-    <description>Whether you’re a solo analytics engineer or part of a large data team, documentation is often an afterthought in data projects, but in dbt, it’s a first-class citizen that can dramatically ...</description>
+    <description>Improve your dbt project documentation with best practices. Learn how to create clear data lineage, enhance team collaboration, and leverage dbt's features for effective, maintainable data transformation documentation.</description>
     <pubDate>Tue, 01 Apr 2025 00:00:00 GMT</pubDate>
   </item><item>
     <title>Understanding the Difference Between Sources and Models in dbt-core</title>
     <link>https://p-munhoz.github.io/blog/dbt/dbt-core-source-vs-models</link>
     <guid>https://p-munhoz.github.io/blog/dbt/dbt-core-source-vs-models</guid>
-    <description>Context When working with dbt-core (data build tool), understanding the fundamental difference between sources and models is crucial for building effective data transformations ...</description>
+    <description>Clarify the fundamental difference between sources and models in dbt-core. Learn how they function in the analytics engineering workflow, how to define them, and best practices for building robust data transformation pipelines.</description>
     <pubDate>Thu, 20 Mar 2025 00:00:00 GMT</pubDate>
   </item><item>
     <title>Building a Simple Python Workflow Orchestrator: A Practical Guide</title>
     <link>https://p-munhoz.github.io/blog/python/simple-python-orchestrator</link>
     <guid>https://p-munhoz.github.io/blog/python/simple-python-orchestrator</guid>
-    <description>As data engineers, we often face the challenge of orchestrating complex workflows. In this article, I’ll share insights from a recent project where I built a simple workflow orchestrator in Python.</description>
+    <description>Discover how to build a basic Python workflow orchestrator. This guide covers core concepts, architecture inspired by Apache Airflow, and practical implementation details for data engineers managing complex pipelines.</description>
     <pubDate>Wed, 19 Mar 2025 00:00:00 GMT</pubDate>
   </item><item>
     <title>Getting Started with dbt-core: A Beginner’s Guide to Data Transformation</title>
     <link>https://p-munhoz.github.io/blog/dbt/dbt-core-beginner-guide</link>
     <guid>https://p-munhoz.github.io/blog/dbt/dbt-core-beginner-guide</guid>
-    <description>What is dbt? dbt (data build tools) is an open-source CLI (command line tool) that helps analysts and engineers transform data in their warehouse more effectively (from Wikipedia ...</description>
+    <description>Learn dbt-core from scratch. This beginner-friendly tutorial shows you how to set up dbt, connect to a warehouse, and run your first SQL models with Jinja templates.</description>
     <pubDate>Thu, 06 Feb 2025 00:00:00 GMT</pubDate>
   </item>
     </channel>
