@@ -6,35 +6,47 @@
       <description>Last 10 notes on ❄️ Pierre Munhoz engineering blog</description>
       <generator>Quartz -- quartz.jzhao.xyz</generator>
       <item>
-    <title>Welcome to my engineering blog</title>
-    <link>https://p-munhoz.github.io/blog/</link>
-    <guid>https://p-munhoz.github.io/blog/</guid>
-    <description>Meet Pierre Munhoz, a Senior Data Engineer with 6 years of experience. Explore his engineering blog covering data analysis, data engineering, coding, and personal interests like cooking and running.</description>
-    <pubDate>Mon, 05 May 2025 09:04:48 GMT</pubDate>
-  </item><item>
     <title>Majority Element</title>
     <link>https://p-munhoz.github.io/blog/top-150-interviews/majority-element-algorithm</link>
     <guid>https://p-munhoz.github.io/blog/top-150-interviews/majority-element-algorithm</guid>
-    <description>Problem statement Given an array nums of size n, return the majority element. The majority element is the element that appears more than ⌊n / 2⌋ times.</description>
-    <pubDate>Mon, 05 May 2025 09:04:48 GMT</pubDate>
+    <description>## Problem statement Given an array nums of size n, return the majority element. The majority element is the element that appears more than ⌊n / 2⌋ times.</description>
+    <pubDate>Thu, 22 May 2025 07:38:52 GMT</pubDate>
+  </item><item>
+    <title>Pierre Munhoz — Data Engineering, Analytics &amp; More</title>
+    <link>https://p-munhoz.github.io/blog/</link>
+    <guid>https://p-munhoz.github.io/blog/</guid>
+    <description>Discover the engineering blog of Pierre Munhoz, a freelance Senior Data Engineer. Explore insights on data engineering, analytics, and coding — plus thoughts on cooking, running, and creative work.</description>
+    <pubDate>Thu, 22 May 2025 07:38:52 GMT</pubDate>
   </item><item>
     <title>How to backup Airbyte on Google Cloud Storage?</title>
     <link>https://p-munhoz.github.io/blog/airbyte/how-to-backup-airbyte-gcp</link>
     <guid>https://p-munhoz.github.io/blog/airbyte/how-to-backup-airbyte-gcp</guid>
     <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte. For a migration from one place to another Backup creation of the old instance Stop all the services docker-compose down Start only the database docker-compose up -d db Create the backup database file docker exec airbyte-db pg_dump -U docker airbyte &gt; airbyte_backup.sql Stop the service again docker-compose down When you’ve done that you have generated airbyte_backup.sql file.</description>
-    <pubDate>Mon, 05 May 2025 09:04:48 GMT</pubDate>
+    <pubDate>Thu, 22 May 2025 07:38:52 GMT</pubDate>
   </item><item>
     <title>What is Boyer-Moore majority vote algorithm?</title>
     <link>https://p-munhoz.github.io/blog/algorithm/boyer-moore-majority-vote</link>
     <guid>https://p-munhoz.github.io/blog/algorithm/boyer-moore-majority-vote</guid>
     <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using ...</description>
-    <pubDate>Mon, 05 May 2025 09:04:48 GMT</pubDate>
+    <pubDate>Thu, 22 May 2025 07:38:52 GMT</pubDate>
   </item><item>
     <title>Caviar-airways: discover the world through music</title>
     <link>https://p-munhoz.github.io/blog/caviar-airways</link>
     <guid>https://p-munhoz.github.io/blog/caviar-airways</guid>
     <description>Explore Caviar-airways, a unique website blending music and travel. Discover Spotify playlists pinned on an interactive map, built with HTML, CSS, and vanilla JS.</description>
-    <pubDate>Mon, 05 May 2025 09:04:48 GMT</pubDate>
+    <pubDate>Thu, 22 May 2025 07:38:52 GMT</pubDate>
+  </item><item>
+    <title>Building a Local Data Platform with Terraform and Docker</title>
+    <link>https://p-munhoz.github.io/blog/data-engineering/building-local-data-platform-terraform-docker</link>
+    <guid>https://p-munhoz.github.io/blog/data-engineering/building-local-data-platform-terraform-docker</guid>
+    <description>A step-by-step guide to building a fully local, cloud-like data platform using Terraform, Docker, Airflow, and more.</description>
+    <pubDate>Thu, 22 May 2025 00:00:00 GMT</pubDate>
+  </item><item>
+    <title>Building Reliable Data Pipelines: A Complete Guide to dbt Contracts and Schema Enforcement</title>
+    <link>https://p-munhoz.github.io/blog/dbt/dbt-contracts-schema-enforcement-guide</link>
+    <guid>https://p-munhoz.github.io/blog/dbt/dbt-contracts-schema-enforcement-guide</guid>
+    <description>Learn how to implement robust data contracts in dbt using schema enforcement. This comprehensive guide covers contract types, implementation strategies, and real-world examples to ensure data reliability and prevent pipeline failures.</description>
+    <pubDate>Tue, 06 May 2025 00:00:00 GMT</pubDate>
   </item><item>
     <title>Practical Data Modeling with dbt: Star vs. Snowflake Compared</title>
     <link>https://p-munhoz.github.io/blog/dbt/star-vs-snowflake-schema-dbt</link>
@@ -53,18 +65,6 @@
     <guid>https://p-munhoz.github.io/blog/dbt/dbt-staging-models-best-practices</guid>
     <description>Go beyond basic dbt staging models. Understand their crucial role, implement best practices for naming & cleaning, handle joins with base models & choose materializations.</description>
     <pubDate>Wed, 09 Apr 2025 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>Stop Losing Data History: Use dbt Snapshots for Easy SCD Type 2</title>
-    <link>https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2</link>
-    <guid>https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2</guid>
-    <description>Prevent data history loss using dbt snapshots. This guide explains how to implement Slowly Changing Dimension (SCD) Type 2 tables easily, track changes over time (like subscription status), and gain historical insights.</description>
-    <pubDate>Fri, 04 Apr 2025 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>Level Up Your dbt Docs: Best Practices for Clearer Data Lineage &amp; Team Clarity</title>
-    <link>https://p-munhoz.github.io/blog/dbt/dbt-documentation-best-practices</link>
-    <guid>https://p-munhoz.github.io/blog/dbt/dbt-documentation-best-practices</guid>
-    <description>Improve your dbt project documentation with best practices. Learn how to create clear data lineage, enhance team collaboration, and leverage dbt's features for effective, maintainable data transformation documentation.</description>
-    <pubDate>Tue, 01 Apr 2025 00:00:00 GMT</pubDate>
   </item>
     </channel>
   </rss>

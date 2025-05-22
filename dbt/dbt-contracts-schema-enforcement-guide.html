@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en"><head><title>Building Reliable Data Pipelines: A Complete Guide to dbt Contracts and Schema Enforcement</title><meta charset="utf-8"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM Plex Mono&amp;family=Schibsted Grotesk:wght@400;700&amp;family=Source Sans Pro:ital,wght@0,400;0,600;1,400;1,600&amp;display=swap"/><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin="anonymous"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link rel="canonical" href="https://p-munhoz.github.io/blog/dbt/dbt-contracts-schema-enforcement-guide"/><meta name="og:site_name" content="❄️ Pierre Munhoz engineering blog"/><meta property="og:title" content="Building Reliable Data Pipelines: A Complete Guide to dbt Contracts and Schema Enforcement"/><meta property="og:type" content="website"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="Building Reliable Data Pipelines: A Complete Guide to dbt Contracts and Schema Enforcement"/><meta name="twitter:description" content="Learn how to implement robust data contracts in dbt using schema enforcement. This comprehensive guide covers contract types, implementation strategies, and real-world examples to ensure data reliability and prevent pipeline failures."/><meta property="og:description" content="Learn how to implement robust data contracts in dbt using schema enforcement. This comprehensive guide covers contract types, implementation strategies, and real-world examples to ensure data reliability and prevent pipeline failures."/><meta property="og:image:type" content="image/webp"/><meta property="og:image:alt" content="Learn how to implement robust data contracts in dbt using schema enforcement. This comprehensive guide covers contract types, implementation strategies, and real-world examples to ensure data reliability and prevent pipeline failures."/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image:url" content="https://p-munhoz.github.io/blog/static/social-images/content-dbt-dbt-contracts-schema-enforcement-guide.md.webp"/><meta name="twitter:image" content="https://p-munhoz.github.io/blog/static/social-images/content-dbt-dbt-contracts-schema-enforcement-guide.md.webp"/><meta property="og:image" content="https://p-munhoz.github.io/blog/static/social-images/content-dbt-dbt-contracts-schema-enforcement-guide.md.webp"/><meta property="twitter:domain" content="p-munhoz.github.io/blog"/><meta property="og:url" content="https://p-munhoz.github.io/blog/dbt/dbt-contracts-schema-enforcement-guide"/><meta property="twitter:url" content="https://p-munhoz.github.io/blog/dbt/dbt-contracts-schema-enforcement-guide"/><link rel="icon" href="../static/icon.png"/><meta name="description" content="Learn how to implement robust data contracts in dbt using schema enforcement. This comprehensive guide covers contract types, implementation strategies, and real-world examples to ensure data reliability and prevent pipeline failures."/><meta name="generator" content="Quartz"/><meta name="google-site-verification" content="Uk-Wy3I4Mu2CyP3YBgy_L-a6iyyu_sRBz4GZVsJQyu0"/><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Building Reliable Data Pipelines: A Complete Guide to dbt Contracts and Schema Enforcement","author":{"@type":"Person","name":"Pierre Munhoz"},"datePublished":"2025-05-06T00:00:00.000Z","image":"https://p-munhoz.github.io/blog/static/social-images/content-dbt-dbt-contracts-schema-enforcement-guide.md.webp","url":"https://p-munhoz.github.io/blog/dbt/dbt-contracts-schema-enforcement-guide","publisher":{"@type":"Organization","name":"Pierre Munhoz Engineering Blog"},"description":"Learn how to implement robust data contracts in dbt using schema enforcement. This comprehensive guide covers contract types, implementation strategies, and real-world examples to ensure data reliability and prevent pipeline failures."}</script><link href="../index.css" rel="stylesheet" type="text/css" spa-preserve/><link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet" type="text/css" spa-preserve/><script src="../prescript.js" type="application/javascript" spa-preserve></script><script type="application/javascript" spa-preserve>const fetchData = fetch("../static/contentIndex.json").then(data => data.json())</script></head><body data-slug="dbt/dbt-contracts-schema-enforcement-guide"><div id="quartz-root" class="page"><div id="quartz-body"><div class="left sidebar"><h2 class="page-title"><a href="..">❄️ Pierre Munhoz engineering blog</a></h2><div class="spacer mobile-only"></div><div class="search"><button class="search-button" id="search-button"><p>Search</p><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title>Search</title><g class="search-path" fill="none"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"></path><circle cx="8" cy="8" r="7"></circle></g></svg></button><div id="search-container"><div id="search-space"><input autocomplete="off" id="search-bar" name="search" type="text" aria-label="Search for something" placeholder="Search for something"/><div id="search-layout" data-preview="true"></div></div></div></div><button class="darkmode" id="darkmode"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="dayIcon" x="0px" y="0px" viewBox="0 0 35 35" style="enable-background:new 0 0 35 35" xml:space="preserve" aria-label="Dark mode"><title>Dark mode</title><path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="nightIcon" x="0px" y="0px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100" xml:space="preserve" aria-label="Light mode"><title>Light mode</title><path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571  C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23  c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369  c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65  c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"></path></svg></button><div class="explorer"><button type="button" id="mobile-explorer" class="collapsed hide-until-loaded" data-behavior="collapse" data-collapsed="collapsed" data-savestate="true" data-tree="[{&quot;path&quot;:&quot;airbyte&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;algorithm&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;data-engineering&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;dbt&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;gcp&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;github-actions&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;python&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;top-150-interviews&quot;,&quot;collapsed&quot;:true}]" data-mobile="true" aria-controls="explorer-content" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button><button type="button" id="desktop-explorer" class="title-button" data-behavior="collapse" data-collapsed="collapsed" data-savestate="true" data-tree="[{&quot;path&quot;:&quot;airbyte&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;algorithm&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;data-engineering&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;dbt&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;gcp&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;github-actions&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;python&quot;,&quot;collapsed&quot;:true},{&quot;path&quot;:&quot;top-150-interviews&quot;,&quot;collapsed&quot;:true}]" data-mobile="false" aria-controls="explorer-content" aria-expanded="true"><h2>Explorer</h2><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div id="explorer-content"><ul class="overflow" id="explorer-ul"><li><div class="folder-outer open"><ul style="padding-left:0;" class="content" data-folderul><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="airbyte"><button class="folder-button"><span class="folder-title">airbyte</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="airbyte"><li><a href="../airbyte/how-to-backup-airbyte-gcp" data-for="airbyte/how-to-backup-airbyte-gcp">How to backup Airbyte on Google Cloud Storage?</a></li><li><a href="../airbyte/how-to-setup-airbyte-gcp" data-for="airbyte/how-to-setup-airbyte-gcp">How to host Airbyte on Google Cloud Platform?</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="algorithm"><button class="folder-button"><span class="folder-title">algorithm</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="algorithm"><li><a href="../algorithm/boyer-moore-majority-vote" data-for="algorithm/boyer-moore-majority-vote">What is Boyer-Moore majority vote algorithm?</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="data-engineering"><button class="folder-button"><span class="folder-title">data-engineering</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="data-engineering"><li><a href="../data-engineering/building-local-data-platform-terraform-docker" data-for="data-engineering/building-local-data-platform-terraform-docker">Building a Local Data Platform with Terraform and Docker</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="dbt"><button class="folder-button"><span class="folder-title">dbt</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="dbt"><li><a href="../dbt/dbt-contracts-schema-enforcement-guide" data-for="dbt/dbt-contracts-schema-enforcement-guide">Building Reliable Data Pipelines: A Complete Guide to dbt Contracts and Schema Enforcement</a></li><li><a href="../dbt/dbt-core-beginner-guide" data-for="dbt/dbt-core-beginner-guide">Getting Started with dbt-core: A Beginner’s Guide to Data Transformation</a></li><li><a href="../dbt/dbt-staging-models-best-practices" data-for="dbt/dbt-staging-models-best-practices">How to Build Effective dbt Staging Models: Naming, Base Models &amp; Materialization</a></li><li><a href="../dbt/dbt-documentation-best-practices" data-for="dbt/dbt-documentation-best-practices">Level Up Your dbt Docs: Best Practices for Clearer Data Lineage &amp; Team Clarity</a></li><li><a href="../dbt/mastering-data-quality-dbt-testing-strategies" data-for="dbt/mastering-data-quality-dbt-testing-strategies">Mastering Data Quality with dbt: From Essential Checks to Advanced Testing Strategies</a></li><li><a href="../dbt/star-vs-snowflake-schema-dbt" data-for="dbt/star-vs-snowflake-schema-dbt">Practical Data Modeling with dbt: Star vs. Snowflake Compared</a></li><li><a href="../dbt/dbt-snapshots-guide-scd-type-2" data-for="dbt/dbt-snapshots-guide-scd-type-2">Stop Losing Data History: Use dbt Snapshots for Easy SCD Type 2</a></li><li><a href="../dbt/dbt-core-source-vs-models" data-for="dbt/dbt-core-source-vs-models">Understanding the Difference Between Sources and Models in dbt-core</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="gcp"><button class="folder-button"><span class="folder-title">GCP</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="gcp"><li><a href="../gcp/how-to-delete-old-dbt-models-bigquery" data-for="gcp/how-to-delete-old-dbt-models-bigquery">How to remove deleted dbt models in BigQuery?</a></li><li><a href="../gcp/modernizing-data-lakes-data-warehouse-gcp" data-for="gcp/modernizing-data-lakes-data-warehouse-gcp">Modernizing Data Lakes and Data Warehouses with Google Cloud sum up</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="github-actions"><button class="folder-button"><span class="folder-title">github-actions</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="github-actions"><li><a href="../github-actions/ci-cd-github-actions-dbt-core" data-for="github-actions/ci-cd-github-actions-dbt-core">CI/CD pipeline implementation with GitHub Actions for dbt-core transformations</a></li></ul></div></li><li><div class="folder-outer "><ul style="padding-left:0;" class="content" data-folderul></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="python"><button class="folder-button"><span class="folder-title">python</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="python"><li><a href="../python/simple-python-orchestrator" data-for="python/simple-python-orchestrator">Building a Simple Python Workflow Orchestrator: A Practical Guide</a></li><li><a href="../python/print-vs-logger" data-for="python/print-vs-logger">Why You Should Replace Print Statements with Logging in Python</a></li></ul></div></li><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div data-folderpath="top-150-interviews"><button class="folder-button"><span class="folder-title">top-150-interviews</span></button></div></div><div class="folder-outer "><ul style="padding-left:1.4rem;" class="content" data-folderul="top-150-interviews"><li><a href="../top-150-interviews/majority-element-algorithm" data-for="top-150-interviews/majority-element-algorithm">Majority Element</a></li></ul></div></li><li><a href="../caviar-airways" data-for="caviar-airways">Caviar-airways: discover the world through music</a></li></ul></div></li><li id="explorer-end"></li></ul></div></div></div><div class="center"><div class="page-header"><div class="popover-hint"><nav class="breadcrumb-container" aria-label="breadcrumbs"><div class="breadcrumb-element"><a href="../">Home</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../dbt/">dbt</a><p> ❯ </p></div><div class="breadcrumb-element"><a href>Building Reliable Data Pipelines: A Complete Guide to dbt Contracts and Schema Enforcement</a></div></nav><h1 class="article-title">Building Reliable Data Pipelines: A Complete Guide to dbt Contracts and Schema Enforcement</h1><p show-comma="true" class="content-meta"><time datetime="2025-05-06T00:00:00.000Z">May 06, 2025</time><span>13 min read</span></p><ul class="tags"><li><a href="../tags/dbt" class="internal tag-link">dbt</a></li><li><a href="../tags/dbt-core" class="internal tag-link">dbt-core</a></li><li><a href="../tags/guide" class="internal tag-link">guide</a></li><li><a href="../tags/analytics-engineering" class="internal tag-link">analytics-engineering</a></li><li><a href="../tags/data-modeling" class="internal tag-link">data-modeling</a></li><li><a href="../tags/data-contracts" class="internal tag-link">data-contracts</a></li><li><a href="../tags/schema-enforcement" class="internal tag-link">schema-enforcement</a></li><li><a href="../tags/data-quality" class="internal tag-link">data-quality</a></li><li><a href="../tags/ETL" class="internal tag-link">ETL</a></li><li><a href="../tags/data-transformation" class="internal tag-link">data-transformation</a></li></ul></div></div><article class="popover-hint"><h2 id="1-introduction-why-data-contracts-matter-in-modern-analytics">1. Introduction: Why Data Contracts Matter in Modern Analytics<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#1-introduction-why-data-contracts-matter-in-modern-analytics" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Modern analytics stacks are becoming increasingly complex, with data flowing from numerous sources through multiple transformation layers before reaching dashboards, reports, and ML models. Without clear agreements about data structure, meaning, and quality, this complexity quickly leads to instability and distrust.</p>
+<p>This is where <strong>data contracts</strong> come in, there are formal agreements that define what data <em>should</em> look like at different stages of your pipeline.</p>
+<p>Data contracts aren’t just nice-to-have documentation; they’re executable specifications that verify your data matches expected patterns, ensuring:</p>
+<ul>
+<li>Prevention of silent data pipeline failures</li>
+<li>Immediate detection of schema violations</li>
+<li>Clearer communication between data producers and consumers</li>
+<li>Reduced time spent debugging unexpected data issues</li>
+</ul>
+<p>In this guide, we’ll explore how to implement robust data contracts in <strong>dbt</strong> using the recently added schema contract enforcement features. You’ll learn implementation strategies, best practices, and how to integrate these contracts into your broader data quality framework.</p>
+<h2 id="2-understanding-dbt-contracts-more-than-just-types">2. Understanding dbt Contracts: More Than Just Types<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#2-understanding-dbt-contracts-more-than-just-types" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Since version 1.3, dbt has offered contract enforcement capabilities that go beyond simple typing systems. Here’s what they enable you to do:</p>
+<h3 id="core-contract-capabilities">Core Contract Capabilities<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#core-contract-capabilities" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ul>
+<li><strong>Define expected column types</strong> for models</li>
+<li><strong>Enforce presence of required columns</strong></li>
+<li><strong>Control contract strictness</strong> to match your team’s needs</li>
+<li><strong>Validate against physical schemas</strong> in your data warehouse</li>
+</ul>
+<h3 id="whats-new-in-dbt-core-15">What’s New in dbt-core 1.5+<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#whats-new-in-dbt-core-15" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>dbt-core 1.5+ enhanced contract enforcement with:</p>
+<ul>
+<li><strong>Constraints on column values</strong> (e.g., non-null)</li>
+<li><strong>Per-column policies</strong> for selective enforcement</li>
+<li><strong>Graceful contract evolution</strong> with better error messages</li>
+</ul>
+<p>These features have transformed dbt contracts from basic type checking to comprehensive schema management tools that can enforce complex rules across your data models.</p>
+<h2 id="3-when-to-use-contracts-strategic-implementation">3. When to Use Contracts: Strategic Implementation<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#3-when-to-use-contracts-strategic-implementation" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Data contracts aren’t needed everywhere, and over-implementing them can create unnecessary maintenance overhead. Here’s a strategic approach to where contracts deliver the most value:</p>
+<h3 id="high-value-use-cases">High-Value Use Cases<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#high-value-use-cases" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ol>
+<li><strong>Interface layers</strong> between teams or systems</li>
+<li><strong>Published data products</strong> consumed by multiple stakeholders</li>
+<li><strong>Critical analytical tables</strong> that power key business decisions</li>
+<li><strong>External data sharing</strong> with partners or customers</li>
+<li><strong>Models with strict SLAs</strong> where failures are costly</li>
+</ol>
+<h3 id="lower-value-use-cases">Lower-Value Use Cases<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#lower-value-use-cases" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ol>
+<li>Internal intermediate models</li>
+<li>Exploratory or experimental models</li>
+<li>Rapidly evolving models during development</li>
+</ol>
+<blockquote>
+<p>📌 <strong>Key Insight</strong>: Focus contract enforcement where stability and reliability matter most: interfaces, outputs, and critical business entities. Don’t try to contract everything at once.</p>
+</blockquote>
+<h2 id="4-how-to-implement-dbt-contracts-a-step-by-step-guide">4. How to Implement dbt Contracts: A Step-by-Step Guide<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#4-how-to-implement-dbt-contracts-a-step-by-step-guide" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Let’s walk through implementing contracts in dbt from basic to advanced patterns.</p>
+<h3 id="setting-up-your-project-for-contracts">Setting Up Your Project for Contracts<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#setting-up-your-project-for-contracts" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>First, make sure you’re using dbt version 1.3 or later. Then, add these configurations to your <code>dbt_project.yml</code> to enable contracts:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># dbt_project.yml</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  your_project_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    +contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">false</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  # Default: don't enforce contracts</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    marts</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:  </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># Apply contracts to exposed marts/dimensional models</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      +contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  # Enable contract enforcement</span></span></code></pre></figure>
+<h3 id="basic-column-level-contracts">Basic Column-Level Contracts<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#basic-column-level-contracts" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For your first model contract, focus on defining the essential columns and their expected types:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># models/marts/core/schema.yml</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">version</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">2</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dim_customers</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Core customer dimension with validated schema&quot;</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Primary key for the customer dimension&quot;</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">unique</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_email</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Customer email address&quot;</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_name</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Customer full name&quot;</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">signup_date</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">date</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Date when customer signed up&quot;</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">total_orders</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">integer</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Count of customer's lifetime orders&quot;</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">greater_than_or_equal_to</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              value</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0</span></span></code></pre></figure>
+<h3 id="what-happens-behind-the-scenes">What Happens Behind the Scenes<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#what-happens-behind-the-scenes" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>When you run <code>dbt build</code>, dbt will:</p>
+<ol>
+<li>Generate a contract validation query for <code>dim_customers</code></li>
+<li>Compare the model’s actual schema against the expected contract</li>
+<li>Fail the build if:
+<ul>
+<li>Required columns are missing</li>
+<li>Column data types don’t match</li>
+<li>Column constraints are violated</li>
+</ul>
+</li>
+</ol>
+<h3 id="database-specific-data-types">Database-Specific Data Types<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#database-specific-data-types" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>dbt contracts handle database-specific types through abstraction. Here’s a reference table for common data types across warehouses:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>dbt Type</th><th>Snowflake</th><th>BigQuery</th><th>Redshift</th><th>Postgres</th></tr></thead><tbody><tr><td>varchar</td><td>VARCHAR</td><td>STRING</td><td>VARCHAR</td><td>VARCHAR</td></tr><tr><td>integer</td><td>INTEGER</td><td>INT64</td><td>INTEGER</td><td>INTEGER</td></tr><tr><td>float</td><td>FLOAT</td><td>FLOAT64</td><td>FLOAT</td><td>FLOAT</td></tr><tr><td>numeric</td><td>NUMERIC</td><td>NUMERIC</td><td>NUMERIC</td><td>NUMERIC</td></tr><tr><td>boolean</td><td>BOOLEAN</td><td>BOOL</td><td>BOOLEAN</td><td>BOOLEAN</td></tr><tr><td>timestamp</td><td>TIMESTAMP</td><td>TIMESTAMP</td><td>TIMESTAMP</td><td>TIMESTAMP</td></tr><tr><td>date</td><td>DATE</td><td>DATE</td><td>DATE</td><td>DATE</td></tr><tr><td>array</td><td>ARRAY</td><td>ARRAY</td><td>SUPER</td><td>ARRAY</td></tr><tr><td>object</td><td>OBJECT</td><td>STRUCT</td><td>SUPER</td><td>JSONB</td></tr></tbody></table></div>
+<p>Use these types in your contract definitions for cross-database compatibility.</p>
+<h2 id="5-advanced-contract-enforcement-strategies">5. Advanced Contract Enforcement Strategies<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#5-advanced-contract-enforcement-strategies" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Once you’re comfortable with basic contracts, you can implement more sophisticated enforcement approaches.</p>
+<h3 id="contract-strictness-levels">Contract Strictness Levels<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#contract-strictness-levels" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>dbt offers different levels of contract enforcement:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># models/marts/finance/schema.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">fct_transactions</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        strictness</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">strict</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"> # Options: strict, non-strict</span></span></code></pre></figure>
+<p><strong>Strictness Levels:</strong></p>
+<ul>
+<li><strong>strict</strong>: Requires exact schema match (columns, types, constraints)</li>
+<li><strong>non-strict</strong>: Only enforces defined columns, allows additional columns</li>
+</ul>
+<h3 id="partial-contracts">Partial Contracts<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#partial-contracts" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For large models, you can focus contract enforcement on critical columns:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># models/marts/finance/schema.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">large_analytical_model</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        strictness</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">non-strict</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      # Only define and enforce contracts on critical columns</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">transaction_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">amount</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">numeric(18,2)</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      # Other columns exist but aren't enforced</span></span></code></pre></figure>
+<h3 id="conditional-contract-enforcement">Conditional Contract Enforcement<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#conditional-contract-enforcement" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Use dbt’s macro system to conditionally enforce contracts in different environments:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="sql" data-theme="github-light github-dark"><code data-language="sql" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">-- models/marts/core/dim_products.sql</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">{{</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  config(</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">    contract</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      'enforced'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: env_var(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'DBT_ENVIRONMENT'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'development'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">==</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> 'production'</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    }</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  )</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">}}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">select</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  product_id,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  product_name,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  category,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  price</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {{ ref(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'stg_products'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span></code></pre></figure>
+<p>This approach allows you to:</p>
+<ul>
+<li>Enforce contracts strictly in production</li>
+<li>Be more permissive during development and testing</li>
+</ul>
+<h2 id="6-real-world-implementation-data-contract-patterns">6. Real-World Implementation: Data Contract Patterns<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#6-real-world-implementation-data-contract-patterns" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Let’s explore practical contract patterns for different types of models.</p>
+<h3 id="pattern-1-core-dimensional-models">Pattern 1: Core Dimensional Models<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#pattern-1-core-dimensional-models" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For dimension tables that represent core business entities:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># models/marts/core/schema.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dim_customers</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">unique</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_email</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        tests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">unique</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">first_name</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">last_name</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">full_name</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">signup_date</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">date</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_status</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">accepted_values</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              values</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: [</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'active'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'inactive'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'churned'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">]</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">is_deleted</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">boolean</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span></code></pre></figure>
+<h3 id="pattern-2-fact-tables-with-constraints">Pattern 2: Fact Tables with Constraints<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#pattern-2-fact-tables-with-constraints" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For fact tables that capture business events:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># models/marts/sales/schema.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">fct_orders</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">order_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">unique</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        tests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">relationships</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              to</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ref('dim_customers')</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              field</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_id</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">order_date</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">date</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">order_status</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">accepted_values</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              values</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: [</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'pending'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'processing'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'shipped'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'delivered'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'cancelled'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">]</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">item_count</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">integer</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">greater_than_or_equal_to</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              value</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">1</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">order_amount</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">numeric(18,2)</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">shipping_cost</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">numeric(18,2)</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">tax_amount</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">numeric(18,2)</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">total_amount</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">numeric(18,2)</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span></code></pre></figure>
+<h3 id="pattern-3-data-product-apis">Pattern 3: Data Product APIs<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#pattern-3-data-product-apis" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For models explicitly exposed to consumers:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># models/apis/public_data_products/schema.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">product_api_daily_sales</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      Public data product showing daily sales aggregates.</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      This model has a strict contract that will not change</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      without explicit versioning and migration support.</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        strictness</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">strict</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">date_day</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">date</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">unique</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">product_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">product_name</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">category</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">total_quantity_sold</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">integer</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">greater_than_or_equal_to</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              value</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">total_revenue</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">numeric(18,2)</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">average_unit_price</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">numeric(18,2)</span></span></code></pre></figure>
+<h2 id="7-implementing-contracts-with-existing-tests">7. Implementing Contracts with Existing Tests<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#7-implementing-contracts-with-existing-tests" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Data contracts and tests serve complementary purposes:</p>
+<ul>
+<li><strong>Contracts</strong> enforce <em>structural</em> expectations (columns, types)</li>
+<li><strong>Tests</strong> verify <em>data quality</em> expectations (uniqueness, relationships)</li>
+</ul>
+<p>Here’s how to implement both effectively:</p>
+<h3 id="combine-contracts-with-tests">Combine Contracts with Tests<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#combine-contracts-with-tests" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For comprehensive validation, combine contracts with tests:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># models/marts/core/schema.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dim_products</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">product_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        tests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">unique</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">product_name</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        tests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">not_null_proportion</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              at_least</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0.99</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  # Allow up to 1% missing names</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">category_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        tests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">relationships</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              to</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ref('dim_categories')</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              field</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">category_id</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">price</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">numeric(18,2)</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        tests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">dbt_expectations.expect_column_values_to_be_between</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              min_value</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              max_value</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">1000</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">              mostly</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0.95</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  # Allow some outliers</span></span></code></pre></figure>
+<h3 id="testing-vs-constraints-when-to-use-each">Testing vs. Constraints: When to Use Each<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#testing-vs-constraints-when-to-use-each" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>Validation Type</th><th>Use Constraints When</th><th>Use Tests When</th></tr></thead><tbody><tr><td>Not null checks</td><td>Critical for model functionality</td><td>Monitoring data quality</td></tr><tr><td>Uniqueness</td><td>Core identity requirement</td><td>Statistical validation</td></tr><tr><td>Accepted values</td><td>Small, stable set of values</td><td>Larger, changing set of values</td></tr><tr><td>Data boundaries</td><td>Hard limits that shouldn’t be crossed</td><td>Statistical ranges with exceptions</td></tr><tr><td>Relationships</td><td>N/A - Use tests for this</td><td>Always use tests for relationships</td></tr></tbody></table></div>
+<blockquote>
+<p>📌 <strong>Best Practice</strong>: Use constraints for structural guarantees that should never be violated, and tests for data quality checks that may have exceptions or require monitoring.</p>
+</blockquote>
+<h2 id="8-evolving-data-contracts-over-time">8. Evolving Data Contracts Over Time<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#8-evolving-data-contracts-over-time" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Data contracts shouldn’t be rigid - they need to evolve. Here’s how to manage that evolution:</p>
+<h3 id="contract-versioning-strategy">Contract Versioning Strategy<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#contract-versioning-strategy" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ol>
+<li>
+<p><strong>Minor changes</strong> (adding optional columns, relaxing constraints):</p>
+<ul>
+<li>Can be done without breaking consumers</li>
+<li>Update documentation and notify users</li>
+</ul>
+</li>
+<li>
+<p><strong>Major changes</strong> (removing columns, changing types, adding required fields):</p>
+<ul>
+<li>Create a new version of the model</li>
+<li>Support both versions during migration period</li>
+<li>Explicitly deprecate the old version</li>
+</ul>
+</li>
+</ol>
+<h3 id="example-versioning-a-contract">Example: Versioning a Contract<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#example-versioning-a-contract" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># Original model</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_api_v1</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">email</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">name</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span></code></pre></figure>
+<p>When adding a breaking change:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># New version with breaking changes</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_api_v2</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">email</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">first_name</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  # Split name into components</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">last_name</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">phone</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  # New required field</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  # Keep old version during transition</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_api_v1</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      materialized</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">view</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  # Make it a view on top of v2</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">email</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">name</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span></code></pre></figure>
+<p>With corresponding SQL for backward compatibility:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="sql" data-theme="github-light github-dark"><code data-language="sql" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">-- models/apis/customer_api_v1.sql</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">{{</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  config(</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">    contract</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      'enforced'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: true</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    },</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    materialized </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> 'view'</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  )</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">}}</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">select</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  customer_id,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  email,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  concat</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(first_name, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">' '</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, last_name) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> name</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {{ ref(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'customer_api_v2'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span></code></pre></figure>
+<h2 id="9-handling-failures-and-troubleshooting">9. Handling Failures and Troubleshooting<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#9-handling-failures-and-troubleshooting" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>When contracts fail, you need clear debugging paths:</p>
+<h3 id="common-contract-failure-scenarios">Common Contract Failure Scenarios<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#common-contract-failure-scenarios" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>Failure Type</th><th>Example Error</th><th>Troubleshooting Steps</th></tr></thead><tbody><tr><td>Missing column</td><td><code>Column 'customer_status' not found in model</code></td><td>Check model SQL for missing column, verify it’s being selected</td></tr><tr><td>Type mismatch</td><td><code>Expected type 'numeric', got 'varchar'</code></td><td>Examine source data, add explicit casting in model</td></tr><tr><td>Constraint violation</td><td><code>Not null constraint failed for column 'order_id'</code></td><td>Check for null handling in joins, verify source data quality</td></tr><tr><td>Contract reference error</td><td><code>Contract not found for model 'dim_products'</code></td><td>Check schema file paths, verify model name spelling</td></tr></tbody></table></div>
+<h3 id="debugging-contract-issues">Debugging Contract Issues<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#debugging-contract-issues" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>When you encounter contract errors, here’s a systematic approach:</p>
+<ol>
+<li><strong>Examine the error message</strong> for specific column and type information</li>
+<li><strong>Preview model data</strong> with a simple SELECT to verify actual types and values</li>
+<li><strong>Check model SQL</strong> for missing columns or incorrect transformations</li>
+<li><strong>Verify upstream data</strong> hasn’t changed unexpectedly</li>
+<li><strong>Consider if contract is too strict</strong> for the current use case</li>
+</ol>
+<p>Example troubleshooting command:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># Run with --fail-fast to stop at the first error</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> build</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> --select</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> my_model</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> --fail-fast</span></span></code></pre></figure>
+<p>Then check the compiled SQL and actual output:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># Preview model output with inferred column types</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> compile</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> --select</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> my_model</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># Check the compiled SQL in ./target/compiled/{project_name}/my_model.sql</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># Run this in your warehouse to examine actual data and types</span></span></code></pre></figure>
+<h2 id="10-advanced-patterns-beyond-basic-contracts">10. Advanced Patterns: Beyond Basic Contracts<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#10-advanced-patterns-beyond-basic-contracts" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Let’s explore some advanced patterns for large-scale implementations:</p>
+<h3 id="contract-inheritance">Contract Inheritance<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#contract-inheritance" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For related models that share similar contracts:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># Define a base contract using YAML anchors</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">base_contracts</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  &amp;</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">user_contract</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">user_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">unique</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">email</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      constraints</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">signup_date</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">timestamp</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  # Inherit the base contract</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dim_users</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">user_contract  </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># Reference the base contract</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    </span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  # Extend the base contract</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dim_premium_users</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      # Include base contract</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">user_contract</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      # Add more columns</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">subscription_level</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">monthly_fee</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">numeric(12,2)</span></span></code></pre></figure>
+<h3 id="automated-contract-generation">Automated Contract Generation<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#automated-contract-generation" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For existing models without contracts, you can bootstrap contracts using dbt’s run-operation:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="sql" data-theme="github-light github-dark"><code data-language="sql" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">-- macros/generate_model_contract.sql</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">{% macro generate_model_contract(model_name) %}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  {% </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">set</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> relation </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> adapter</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">get_relation</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">      database=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">target</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">database</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">      schema=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">target</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">schema</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      identifier</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">model_name</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  ) %}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  {% </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">if</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> relation %}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    {% </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">set</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> columns </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> adapter</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">get_columns_in_relation</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(relation) %}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    </span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    {% </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">if</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> execute</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> %}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      {{ </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">log</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'# Contract for '</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> ~ model_name ~ </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">':'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, info</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">True) }}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      {{ </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">log</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'columns:'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, info</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">True) }}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      </span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      {% </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">for</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> column </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">in</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> columns %}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        {{ </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">log</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'  - name: '</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> ~ </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">column</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, info</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">True) }}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        {{ </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">log</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'    data_type: '</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> ~ </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">column</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, info</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">True) }}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      {% endfor %}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    {% endif %}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  {% </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">else</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> %}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    {{ </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">exceptions</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">raise_compiler_error</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;Model &quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> ~ model_name ~ </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot; does not exist in the current environment.&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  {% endif %}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">{% endmacro %}</span></span></code></pre></figure>
+<p>Run it to generate a contract yaml:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> run-operation</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> generate_model_contract</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> --args</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> '{&quot;model_name&quot;: &quot;dim_customers&quot;}'</span></span></code></pre></figure>
+<h2 id="11-integration-with-dbt-project-structure">11. Integration with dbt Project Structure<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#11-integration-with-dbt-project-structure" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Contracts should be integrated thoughtfully into your overall dbt project structure:</p>
+<h3 id="organizing-contract-files">Organizing Contract Files<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#organizing-contract-files" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For large projects, consider these options:</p>
+<ol>
+<li>
+<p><strong>Embedded in schema.yml</strong> (simplest approach)</p>
+<pre><code>models/
+  marts/
+    core/
+      schema.yml  # Contains both tests and contracts
+</code></pre>
+</li>
+<li>
+<p><strong>Dedicated contract files</strong> (for complex projects)</p>
+<pre><code>models/
+  marts/
+    core/
+      schema.yml       # Contains tests and docs
+      contracts.yml    # Contains only contracts
+</code></pre>
+</li>
+</ol>
+<h3 id="contract-implementation-by-layer">Contract Implementation by Layer<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#contract-implementation-by-layer" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Different layers of your dbt project require different contract approaches:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>Layer</th><th>Contract Approach</th><th>Example</th></tr></thead><tbody><tr><td>Sources</td><td>Monitoring, not enforcement</td><td>Source freshness checks</td></tr><tr><td>Staging</td><td>Light contracts on critical fields</td><td>Basic type enforcement</td></tr><tr><td>Intermediate</td><td>Minimal contracts</td><td>Focus on critical models only</td></tr><tr><td>Marts/Dimensions</td><td>Comprehensive contracts</td><td>Full schema enforcement</td></tr><tr><td>APIs/Exposed models</td><td>Strict contracts</td><td>Version and document carefully</td></tr></tbody></table></div>
+<h3 id="naming-conventions-for-versioned-contracts">Naming Conventions for Versioned Contracts<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#naming-conventions-for-versioned-contracts" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>For explicit contract versioning:</p>
+<pre><code>models/
+  apis/
+    v1/
+      customer_api.sql
+      schema.yml
+    v2/
+      customer_api.sql
+      schema.yml
+</code></pre>
+<h2 id="12-integrating-contracts-with-your-data-development-lifecycle">12. Integrating Contracts with Your Data Development Lifecycle<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#12-integrating-contracts-with-your-data-development-lifecycle" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>To get maximum value from contracts, integrate them into your full development cycle:</p>
+<h3 id="cicd-integration">CI/CD Integration<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#cicd-integration" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ol>
+<li>
+<p><strong>Run contract validation in CI</strong>:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># .github/workflows/dbt-contracts.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Validate dbt Contracts</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  pull_request</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    branches</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: [ </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">main</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> ]</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">jobs</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  validate-contracts</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    runs-on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ubuntu-latest</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    steps</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">actions/checkout@v3</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Setup dbt</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dbt-labs/dbt-github-actions/setup@v1.0</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Run contract validation</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dbt compile --models tag:contract-critical</span></span></code></pre></figure>
+</li>
+<li>
+<p><strong>Pre-commit hooks</strong> for early feedback:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># .pre-commit-config.yaml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">repos</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">- </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">repo</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">local</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  hooks</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dbt-compile</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dbt compile</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      entry</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dbt compile --models tag:contract-critical</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      language</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">system</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      pass_filenames</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">false</span></span></code></pre></figure>
+</li>
+</ol>
+<h3 id="documentation-integration">Documentation Integration<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#documentation-integration" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Enhance your dbt docs with contract information:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># models/marts/core/schema.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dim_customers</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      Core customer dimension table.</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      </span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      ## Contract Information</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      This model has a strict contract that guarantees:</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      - Every row has a unique customer_id</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      - Email addresses are always present</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      - Customer status is one of: active, inactive, churned</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      </span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      See our [data contract documentation](link-to-docs) for details on</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      breaking vs. non-breaking changes.</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span></code></pre></figure>
+<p>This documentation will appear in your dbt docs site, helping users understand the guarantees provided by the contract.</p>
+<h2 id="13-measuring-contract-effectiveness">13. Measuring Contract Effectiveness<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#13-measuring-contract-effectiveness" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>To demonstrate the value of contracts, track metrics like:</p>
+<ol>
+<li>
+<p><strong>Contract coverage</strong>:</p>
+<ul>
+<li>% of critical models with contracts</li>
+<li>% of columns under contract enforcement</li>
+</ul>
+</li>
+<li>
+<p><strong>Contract violations</strong>:</p>
+<ul>
+<li>Count of contract failures caught in CI/CD</li>
+<li>Time saved by early detection</li>
+</ul>
+</li>
+<li>
+<p><strong>Consumer impact</strong>:</p>
+<ul>
+<li>Reduction in downstream data quality issues</li>
+<li>Decreased time spent debugging schema issues</li>
+</ul>
+</li>
+</ol>
+<p>Use these metrics to guide your contract implementation strategy and show the business value of your data quality investments.</p>
+<h2 id="14-conclusion-the-future-of-data-contracts-in-dbt">14. Conclusion: The Future of Data Contracts in dbt<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#14-conclusion-the-future-of-data-contracts-in-dbt" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Data contracts represent a significant advancement in how we manage data quality and reliability in analytics workflows. By defining and enforcing expectations about data structure directly in dbt, we create more resilient pipelines and clearer communication between data producers and consumers.</p>
+<p>As you implement data contracts in your organization:</p>
+<ol>
+<li><strong>Start small</strong> with your most critical models</li>
+<li><strong>Balance strictness</strong> against development velocity</li>
+<li><strong>Integrate contracts</strong> with your existing testing strategy</li>
+<li><strong>Document your contracts</strong> for stakeholders</li>
+<li><strong>Version and evolve contracts</strong> intentionally</li>
+</ol>
+<p>Remember that contracts are not a silver bullet for data quality, but part of a comprehensive approach that includes testing, monitoring, and governance. Use them strategically to reinforce the foundation of your data platform and build trust in your analytics outputs.</p>
+<p>What are your experiences with data contracts in dbt? Have you found certain patterns particularly effective? Share your thoughts in the comments!</p>
+<p><strong>Additional Resources:</strong></p>
+<ul>
+<li><a href="https://docs.getdbt.com/docs/build/contracts" class="external" target="_blank">dbt Docs: Schema Contracts<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></li>
+<li><a href="https://www.getdbt.com/blog/introducing-contracts-in-dbt" class="external" target="_blank">dbt Blog: Introducing Contracts<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></li>
+<li><a href="https://github.com/dbt-labs/jaffle_shop_contracts" class="external" target="_blank">Git Repo: dbt-labs/jaffle_shop_contracts<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></li>
+</ul></article><hr/><div class="page-footer"><div class="newsletter-container"><iframe src="https://embeds.beehiiv.com/31677076-bfa0-485d-80e7-72c5f7d11891" data-test-id="beehiiv-embed" width="100%" height="320" frameborder="0" scrolling="no" style="border-radius:4px;border:2px solid #e5e7eb;margin:0px;background-color:transparent;"></iframe></div><div class="giscus" data-repo="p-munhoz/blog" data-repo-id="R_kgDOMqDU7w" data-category="Announcements" data-category-id="DIC_kwDOMqDU784CoOY9" data-mapping="url" data-strict="1" data-reactions-enabled="1" data-input-position="bottom" data-light-theme="light" data-dark-theme="dark" data-theme-url="https://p-munhoz.github.io/blog/static/giscus"></div></div></div><div class="right sidebar"><div class="graph"><h3>Graph View</h3><div class="graph-outer"><div id="graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:1,&quot;scale&quot;:1.1,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:false,&quot;enableRadial&quot;:false}"></div><button id="global-graph-icon" aria-label="Global Graph"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 55 55" fill="currentColor" xml:space="preserve"><path d="M49,0c-3.309,0-6,2.691-6,6c0,1.035,0.263,2.009,0.726,2.86l-9.829,9.829C32.542,17.634,30.846,17,29,17
+                s-3.542,0.634-4.898,1.688l-7.669-7.669C16.785,10.424,17,9.74,17,9c0-2.206-1.794-4-4-4S9,6.794,9,9s1.794,4,4,4
+                c0.74,0,1.424-0.215,2.019-0.567l7.669,7.669C21.634,21.458,21,23.154,21,25s0.634,3.542,1.688,4.897L10.024,42.562
+                C8.958,41.595,7.549,41,6,41c-3.309,0-6,2.691-6,6s2.691,6,6,6s6-2.691,6-6c0-1.035-0.263-2.009-0.726-2.86l12.829-12.829
+                c1.106,0.86,2.44,1.436,3.898,1.619v10.16c-2.833,0.478-5,2.942-5,5.91c0,3.309,2.691,6,6,6s6-2.691,6-6c0-2.967-2.167-5.431-5-5.91
+                v-10.16c1.458-0.183,2.792-0.759,3.898-1.619l7.669,7.669C41.215,39.576,41,40.26,41,41c0,2.206,1.794,4,4,4s4-1.794,4-4
+                s-1.794-4-4-4c-0.74,0-1.424,0.215-2.019,0.567l-7.669-7.669C36.366,28.542,37,26.846,37,25s-0.634-3.542-1.688-4.897l9.665-9.665
+                C46.042,11.405,47.451,12,49,12c3.309,0,6-2.691,6-6S52.309,0,49,0z M11,9c0-1.103,0.897-2,2-2s2,0.897,2,2s-0.897,2-2,2
+                S11,10.103,11,9z M6,51c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S8.206,51,6,51z M33,49c0,2.206-1.794,4-4,4s-4-1.794-4-4
+                s1.794-4,4-4S33,46.794,33,49z M29,31c-3.309,0-6-2.691-6-6s2.691-6,6-6s6,2.691,6,6S32.309,31,29,31z M47,41c0,1.103-0.897,2-2,2
+                s-2-0.897-2-2s0.897-2,2-2S47,39.897,47,41z M49,10c-2.206,0-4-1.794-4-4s1.794-4,4-4s4,1.794,4,4S51.206,10,49,10z"></path></svg></button></div><div id="global-graph-outer"><div id="global-graph-container" data-cfg="{&quot;drag&quot;:true,&quot;zoom&quot;:true,&quot;depth&quot;:-1,&quot;scale&quot;:0.9,&quot;repelForce&quot;:0.5,&quot;centerForce&quot;:0.3,&quot;linkDistance&quot;:30,&quot;fontSize&quot;:0.6,&quot;opacityScale&quot;:1,&quot;showTags&quot;:true,&quot;removeTags&quot;:[],&quot;focusOnHover&quot;:true,&quot;enableRadial&quot;:true}"></div></div></div><div class="toc desktop-only"><button type="button" id="toc" class aria-controls="toc-content" aria-expanded="true"><h3>Table of Contents</h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div id="toc-content" class><ul class="overflow"><li class="depth-0"><a href="#1-introduction-why-data-contracts-matter-in-modern-analytics" data-for="1-introduction-why-data-contracts-matter-in-modern-analytics">1. Introduction: Why Data Contracts Matter in Modern Analytics</a></li><li class="depth-0"><a href="#2-understanding-dbt-contracts-more-than-just-types" data-for="2-understanding-dbt-contracts-more-than-just-types">2. Understanding dbt Contracts: More Than Just Types</a></li><li class="depth-1"><a href="#core-contract-capabilities" data-for="core-contract-capabilities">Core Contract Capabilities</a></li><li class="depth-1"><a href="#whats-new-in-dbt-core-15" data-for="whats-new-in-dbt-core-15">What’s New in dbt-core 1.5+</a></li><li class="depth-0"><a href="#3-when-to-use-contracts-strategic-implementation" data-for="3-when-to-use-contracts-strategic-implementation">3. When to Use Contracts: Strategic Implementation</a></li><li class="depth-1"><a href="#high-value-use-cases" data-for="high-value-use-cases">High-Value Use Cases</a></li><li class="depth-1"><a href="#lower-value-use-cases" data-for="lower-value-use-cases">Lower-Value Use Cases</a></li><li class="depth-0"><a href="#4-how-to-implement-dbt-contracts-a-step-by-step-guide" data-for="4-how-to-implement-dbt-contracts-a-step-by-step-guide">4. How to Implement dbt Contracts: A Step-by-Step Guide</a></li><li class="depth-1"><a href="#setting-up-your-project-for-contracts" data-for="setting-up-your-project-for-contracts">Setting Up Your Project for Contracts</a></li><li class="depth-1"><a href="#basic-column-level-contracts" data-for="basic-column-level-contracts">Basic Column-Level Contracts</a></li><li class="depth-1"><a href="#what-happens-behind-the-scenes" data-for="what-happens-behind-the-scenes">What Happens Behind the Scenes</a></li><li class="depth-1"><a href="#database-specific-data-types" data-for="database-specific-data-types">Database-Specific Data Types</a></li><li class="depth-0"><a href="#5-advanced-contract-enforcement-strategies" data-for="5-advanced-contract-enforcement-strategies">5. Advanced Contract Enforcement Strategies</a></li><li class="depth-1"><a href="#contract-strictness-levels" data-for="contract-strictness-levels">Contract Strictness Levels</a></li><li class="depth-1"><a href="#partial-contracts" data-for="partial-contracts">Partial Contracts</a></li><li class="depth-1"><a href="#conditional-contract-enforcement" data-for="conditional-contract-enforcement">Conditional Contract Enforcement</a></li><li class="depth-0"><a href="#6-real-world-implementation-data-contract-patterns" data-for="6-real-world-implementation-data-contract-patterns">6. Real-World Implementation: Data Contract Patterns</a></li><li class="depth-1"><a href="#pattern-1-core-dimensional-models" data-for="pattern-1-core-dimensional-models">Pattern 1: Core Dimensional Models</a></li><li class="depth-1"><a href="#pattern-2-fact-tables-with-constraints" data-for="pattern-2-fact-tables-with-constraints">Pattern 2: Fact Tables with Constraints</a></li><li class="depth-1"><a href="#pattern-3-data-product-apis" data-for="pattern-3-data-product-apis">Pattern 3: Data Product APIs</a></li><li class="depth-0"><a href="#7-implementing-contracts-with-existing-tests" data-for="7-implementing-contracts-with-existing-tests">7. Implementing Contracts with Existing Tests</a></li><li class="depth-1"><a href="#combine-contracts-with-tests" data-for="combine-contracts-with-tests">Combine Contracts with Tests</a></li><li class="depth-1"><a href="#testing-vs-constraints-when-to-use-each" data-for="testing-vs-constraints-when-to-use-each">Testing vs. Constraints: When to Use Each</a></li><li class="depth-0"><a href="#8-evolving-data-contracts-over-time" data-for="8-evolving-data-contracts-over-time">8. Evolving Data Contracts Over Time</a></li><li class="depth-1"><a href="#contract-versioning-strategy" data-for="contract-versioning-strategy">Contract Versioning Strategy</a></li><li class="depth-1"><a href="#example-versioning-a-contract" data-for="example-versioning-a-contract">Example: Versioning a Contract</a></li><li class="depth-0"><a href="#9-handling-failures-and-troubleshooting" data-for="9-handling-failures-and-troubleshooting">9. Handling Failures and Troubleshooting</a></li><li class="depth-1"><a href="#common-contract-failure-scenarios" data-for="common-contract-failure-scenarios">Common Contract Failure Scenarios</a></li><li class="depth-1"><a href="#debugging-contract-issues" data-for="debugging-contract-issues">Debugging Contract Issues</a></li><li class="depth-0"><a href="#10-advanced-patterns-beyond-basic-contracts" data-for="10-advanced-patterns-beyond-basic-contracts">10. Advanced Patterns: Beyond Basic Contracts</a></li><li class="depth-1"><a href="#contract-inheritance" data-for="contract-inheritance">Contract Inheritance</a></li><li class="depth-1"><a href="#automated-contract-generation" data-for="automated-contract-generation">Automated Contract Generation</a></li><li class="depth-0"><a href="#11-integration-with-dbt-project-structure" data-for="11-integration-with-dbt-project-structure">11. Integration with dbt Project Structure</a></li><li class="depth-1"><a href="#organizing-contract-files" data-for="organizing-contract-files">Organizing Contract Files</a></li><li class="depth-1"><a href="#contract-implementation-by-layer" data-for="contract-implementation-by-layer">Contract Implementation by Layer</a></li><li class="depth-1"><a href="#naming-conventions-for-versioned-contracts" data-for="naming-conventions-for-versioned-contracts">Naming Conventions for Versioned Contracts</a></li><li class="depth-0"><a href="#12-integrating-contracts-with-your-data-development-lifecycle" data-for="12-integrating-contracts-with-your-data-development-lifecycle">12. Integrating Contracts with Your Data Development Lifecycle</a></li><li class="depth-1"><a href="#cicd-integration" data-for="cicd-integration">CI/CD Integration</a></li><li class="depth-1"><a href="#documentation-integration" data-for="documentation-integration">Documentation Integration</a></li><li class="depth-0"><a href="#13-measuring-contract-effectiveness" data-for="13-measuring-contract-effectiveness">13. Measuring Contract Effectiveness</a></li><li class="depth-0"><a href="#14-conclusion-the-future-of-data-contracts-in-dbt" data-for="14-conclusion-the-future-of-data-contracts-in-dbt">14. Conclusion: The Future of Data Contracts in dbt</a></li></ul></div></div></div><footer class><p>Created with ❤️ by <a href="https://pierre-munhoz-portfolio.vercel.app/" target="_blank">Pierre Munhoz</a> © 2025</p><ul><li><a href="https://github.com/p-munhoz/" target="_blank">GitHub</a></li><li><a href="https://www.linkedin.com/in/pierre-munhoz/" target="_blank">LinkedIn</a></li></ul></footer></div></div></body><script type="application/javascript">function c(){let t=this.parentElement;t.classList.toggle("is-collapsed");let l=t.classList.contains("is-collapsed")?this.scrollHeight:t.scrollHeight;t.style.maxHeight=l+"px";let o=t,e=t.parentElement;for(;e;){if(!e.classList.contains("callout"))return;let n=e.classList.contains("is-collapsed")?e.scrollHeight:e.scrollHeight+o.scrollHeight;e.style.maxHeight=n+"px",o=e,e=e.parentElement}}function i(){let t=document.getElementsByClassName("callout is-collapsible");for(let s of t){let l=s.firstElementChild;if(l){l.addEventListener("click",c),window.addCleanup(()=>l.removeEventListener("click",c));let e=s.classList.contains("is-collapsed")?l.scrollHeight:s.scrollHeight;s.style.maxHeight=e+"px"}}}document.addEventListener("nav",i);window.addEventListener("resize",i);
+</script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/copy-tex.min.js" type="application/javascript"></script><script src="../postscript.js" type="module"></script></html>
