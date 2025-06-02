@@ -1,70 +1,70 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url>
     <loc>https://p-munhoz.github.io/blog/airbyte/how-to-backup-airbyte-gcp</loc>
-    <lastmod>2025-05-26T09:02:07.810Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/airbyte/how-to-setup-airbyte-gcp</loc>
-    <lastmod>2024-07-01T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/algorithm/boyer-moore-majority-vote</loc>
-    <lastmod>2025-05-26T09:02:07.810Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/caviar-airways</loc>
-    <lastmod>2025-05-26T09:02:07.810Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/data-engineering/building-local-data-platform-terraform-docker</loc>
-    <lastmod>2025-05-22T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/data-engineering/gdpr_data_engineers_guide</loc>
-    <lastmod>2025-05-26T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/data-engineering/how-to-master-spark-interview-questions</loc>
-    <lastmod>2025-05-23T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/dbt/dbt-contracts-schema-enforcement-guide</loc>
-    <lastmod>2025-05-06T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/dbt/dbt-core-beginner-guide</loc>
-    <lastmod>2025-02-06T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/dbt/dbt-core-source-vs-models</loc>
-    <lastmod>2025-03-20T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/dbt/dbt-documentation-best-practices</loc>
-    <lastmod>2025-04-01T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/dbt/dbt-snapshots-guide-scd-type-2</loc>
-    <lastmod>2025-04-04T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/dbt/dbt-staging-models-best-practices</loc>
-    <lastmod>2025-04-09T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/dbt/mastering-data-quality-dbt-testing-strategies</loc>
-    <lastmod>2025-04-23T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/dbt/star-vs-snowflake-schema-dbt</loc>
-    <lastmod>2025-05-02T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/gcp/how-to-delete-old-dbt-models-bigquery</loc>
-    <lastmod>2024-08-27T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/gcp/</loc>
-    <lastmod>2024-07-01T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/gcp/modernizing-data-lakes-data-warehouse-gcp</loc>
-    <lastmod>2024-10-24T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/github-actions/ci-cd-github-actions-dbt-core</loc>
-    <lastmod>2024-09-28T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/</loc>
-    <lastmod>2025-05-26T09:02:07.822Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/python/print-vs-logger</loc>
-    <lastmod>2025-01-03T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/python/simple-python-orchestrator</loc>
-    <lastmod>2025-03-19T00:00:00.000Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url><url>
     <loc>https://p-munhoz.github.io/blog/top-150-interviews/majority-element-algorithm</loc>
-    <lastmod>2025-05-26T09:02:07.825Z</lastmod>
+    <lastmod>2025-06-02T13:39:49.000Z</lastmod>
   </url></urlset>

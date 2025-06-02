@@ -6,65 +6,65 @@
       <description>Last 10 notes on ❄️ Pierre Munhoz engineering blog</description>
       <generator>Quartz -- quartz.jzhao.xyz</generator>
       <item>
-    <title>Majority Element</title>
-    <link>https://p-munhoz.github.io/blog/top-150-interviews/majority-element-algorithm</link>
-    <guid>https://p-munhoz.github.io/blog/top-150-interviews/majority-element-algorithm</guid>
-    <description>## Problem statement Given an array nums of size n, return the majority element. The majority element is the element that appears more than ⌊n / 2⌋ times.</description>
-    <pubDate>Mon, 26 May 2025 09:02:07 GMT</pubDate>
-  </item><item>
-    <title>Pierre Munhoz — Data Engineering, Analytics &amp; More</title>
-    <link>https://p-munhoz.github.io/blog/</link>
-    <guid>https://p-munhoz.github.io/blog/</guid>
-    <description>Discover the engineering blog of Pierre Munhoz, a freelance Senior Data Engineer. Explore insights on data engineering, analytics, and coding — plus thoughts on cooking, running, and creative work.</description>
-    <pubDate>Mon, 26 May 2025 09:02:07 GMT</pubDate>
-  </item><item>
     <title>How to backup Airbyte on Google Cloud Storage?</title>
     <link>https://p-munhoz.github.io/blog/airbyte/how-to-backup-airbyte-gcp</link>
     <guid>https://p-munhoz.github.io/blog/airbyte/how-to-backup-airbyte-gcp</guid>
-    <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte. For a migration from one place to another Backup creation of the old instance Stop all the services docker-compose down Start only the database docker-compose up -d db Create the backup database file docker exec airbyte-db pg_dump -U docker airbyte &gt; airbyte_backup.sql Stop the service again docker-compose down When you’ve done that you have generated airbyte_backup.sql file.</description>
-    <pubDate>Mon, 26 May 2025 09:02:07 GMT</pubDate>
+    <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte.</description>
+    <pubDate>Mon, 02 Jun 2025 13:39:49 GMT</pubDate>
+  </item><item>
+    <title>How to host Airbyte on Google Cloud Platform?</title>
+    <link>https://p-munhoz.github.io/blog/airbyte/how-to-setup-airbyte-gcp</link>
+    <guid>https://p-munhoz.github.io/blog/airbyte/how-to-setup-airbyte-gcp</guid>
+    <description>In this article I’ll show you how to setup Airbyte on Google Cloud Platform.</description>
+    <pubDate>Mon, 02 Jun 2025 13:39:49 GMT</pubDate>
   </item><item>
     <title>What is Boyer-Moore majority vote algorithm?</title>
     <link>https://p-munhoz.github.io/blog/algorithm/boyer-moore-majority-vote</link>
     <guid>https://p-munhoz.github.io/blog/algorithm/boyer-moore-majority-vote</guid>
-    <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using ...</description>
-    <pubDate>Mon, 26 May 2025 09:02:07 GMT</pubDate>
+    <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using O(1) space and O(n) time.</description>
+    <pubDate>Mon, 02 Jun 2025 13:39:49 GMT</pubDate>
   </item><item>
     <title>Caviar-airways: discover the world through music</title>
     <link>https://p-munhoz.github.io/blog/caviar-airways</link>
     <guid>https://p-munhoz.github.io/blog/caviar-airways</guid>
-    <description>Explore Caviar-airways, a unique website blending music and travel. Discover Spotify playlists pinned on an interactive map, built with HTML, CSS, and vanilla JS.</description>
-    <pubDate>Mon, 26 May 2025 09:02:07 GMT</pubDate>
-  </item><item>
-    <title>GDPR for Data Engineers: A Practical Guide to Privacy-Compliant Data Architecture</title>
-    <link>https://p-munhoz.github.io/blog/data-engineering/gdpr_data_engineers_guide</link>
-    <guid>https://p-munhoz.github.io/blog/data-engineering/gdpr_data_engineers_guide</guid>
-    <description>A hands-on guide to GDPR for data engineers: pseudonymization, erasure workflows, architecture patterns, and real-world code examples.</description>
-    <pubDate>Mon, 26 May 2025 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>Mastering Apache Spark for Data Engineering Interviews: Concepts, Code, and Real Questions</title>
-    <link>https://p-munhoz.github.io/blog/data-engineering/how-to-master-spark-interview-questions</link>
-    <guid>https://p-munhoz.github.io/blog/data-engineering/how-to-master-spark-interview-questions</guid>
-    <description>A comprehensive guide to mastering Apache Spark for Data Engineering interviews with practical examples and performance optimization tips.</description>
-    <pubDate>Fri, 23 May 2025 00:00:00 GMT</pubDate>
+    <description>Explore Caviar-airways, a unique website blending music and travel. Discover Spotify playlists pinned on an interactive map, built with HTML, CSS, and vanilla JS. Learn about the project's origin and development.</description>
+    <pubDate>Mon, 02 Jun 2025 13:39:49 GMT</pubDate>
   </item><item>
     <title>Building a Local Data Platform with Terraform and Docker</title>
     <link>https://p-munhoz.github.io/blog/data-engineering/building-local-data-platform-terraform-docker</link>
     <guid>https://p-munhoz.github.io/blog/data-engineering/building-local-data-platform-terraform-docker</guid>
     <description>A step-by-step guide to building a fully local, cloud-like data platform using Terraform, Docker, Airflow, and more.</description>
-    <pubDate>Thu, 22 May 2025 00:00:00 GMT</pubDate>
+    <pubDate>Mon, 02 Jun 2025 13:39:49 GMT</pubDate>
+  </item><item>
+    <title>GDPR for Data Engineers: A Practical Guide to Privacy-Compliant Data Architecture</title>
+    <link>https://p-munhoz.github.io/blog/data-engineering/gdpr_data_engineers_guide</link>
+    <guid>https://p-munhoz.github.io/blog/data-engineering/gdpr_data_engineers_guide</guid>
+    <description>A hands-on guide to GDPR for data engineers: pseudonymization, erasure workflows, architecture patterns, and real-world code examples.</description>
+    <pubDate>Mon, 02 Jun 2025 13:39:49 GMT</pubDate>
+  </item><item>
+    <title>Mastering Apache Spark for Data Engineering Interviews: Concepts, Code, and Real Questions</title>
+    <link>https://p-munhoz.github.io/blog/data-engineering/how-to-master-spark-interview-questions</link>
+    <guid>https://p-munhoz.github.io/blog/data-engineering/how-to-master-spark-interview-questions</guid>
+    <description>A comprehensive guide to mastering Apache Spark for Data Engineering interviews with practical examples and performance optimization tips.</description>
+    <pubDate>Mon, 02 Jun 2025 13:39:49 GMT</pubDate>
   </item><item>
     <title>Building Reliable Data Pipelines: A Complete Guide to dbt Contracts and Schema Enforcement</title>
     <link>https://p-munhoz.github.io/blog/dbt/dbt-contracts-schema-enforcement-guide</link>
     <guid>https://p-munhoz.github.io/blog/dbt/dbt-contracts-schema-enforcement-guide</guid>
     <description>Learn how to implement robust data contracts in dbt using schema enforcement. This comprehensive guide covers contract types, implementation strategies, and real-world examples to ensure data reliability and prevent pipeline failures.</description>
-    <pubDate>Tue, 06 May 2025 00:00:00 GMT</pubDate>
+    <pubDate>Mon, 02 Jun 2025 13:39:49 GMT</pubDate>
   </item><item>
-    <title>Practical Data Modeling with dbt: Star vs. Snowflake Compared</title>
-    <link>https://p-munhoz.github.io/blog/dbt/star-vs-snowflake-schema-dbt</link>
-    <guid>https://p-munhoz.github.io/blog/dbt/star-vs-snowflake-schema-dbt</guid>
-    <description>Compare Star vs. Snowflake schemas for analytics database design using dbt. Understand pros/cons, see practical dbt examples, and choose the best model for your data warehouse.</description>
-    <pubDate>Fri, 02 May 2025 00:00:00 GMT</pubDate>
+    <title>Getting Started with dbt-core: A Beginner’s Guide to Data Transformation</title>
+    <link>https://p-munhoz.github.io/blog/dbt/dbt-core-beginner-guide</link>
+    <guid>https://p-munhoz.github.io/blog/dbt/dbt-core-beginner-guide</guid>
+    <description>Learn dbt-core from scratch. This beginner-friendly tutorial shows you how to set up dbt, connect to a warehouse, and run your first SQL models with Jinja templates.</description>
+    <pubDate>Mon, 02 Jun 2025 13:39:49 GMT</pubDate>
+  </item><item>
+    <title>Understanding the Difference Between Sources and Models in dbt-core</title>
+    <link>https://p-munhoz.github.io/blog/dbt/dbt-core-source-vs-models</link>
+    <guid>https://p-munhoz.github.io/blog/dbt/dbt-core-source-vs-models</guid>
+    <description>Clarify the fundamental difference between sources and models in dbt-core. Learn how they function in the analytics engineering workflow, how to define them, and best practices for building robust data transformation pipelines.</description>
+    <pubDate>Mon, 02 Jun 2025 13:39:49 GMT</pubDate>
   </item>
     </channel>
   </rss>
