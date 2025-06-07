@@ -1,12 +1,12 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml"><url>
     <loc>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</loc>
-    <lastmod>2025-06-07T07:17:24.987Z</lastmod>
+    <lastmod>2025-06-07T09:24:37.853Z</lastmod>
   </url><url>
     <loc>https://blog.pmunhoz.com/airbyte/how-to-setup-airbyte-gcp</loc>
     <lastmod>2024-07-01T00:00:00.000Z</lastmod>
   </url><url>
     <loc>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</loc>
-    <lastmod>2025-06-07T07:17:24.987Z</lastmod>
+    <lastmod>2025-06-07T09:24:37.853Z</lastmod>
   </url><url>
     <loc>https://blog.pmunhoz.com/data-engineering/building-local-data-platform-terraform-docker</loc>
     <lastmod>2025-05-22T00:00:00.000Z</lastmod>
@@ -41,23 +41,20 @@
     <loc>https://blog.pmunhoz.com/dbt/star-vs-snowflake-schema-dbt</loc>
     <lastmod>2025-05-02T00:00:00.000Z</lastmod>
   </url><url>
-    <loc>https://blog.pmunhoz.com/docker/docker-containers-introduction</loc>
+    <loc>https://blog.pmunhoz.com/docker/docker-behind-containers</loc>
     <lastmod>2025-06-06T00:00:00.000Z</lastmod>
+  </url><url>
+    <loc>https://blog.pmunhoz.com/docker/docker-containers-introduction</loc>
+    <lastmod>2025-06-07T00:00:00.000Z</lastmod>
   </url><url>
     <loc>https://blog.pmunhoz.com/gcp/how-to-delete-old-dbt-models-bigquery</loc>
     <lastmod>2024-08-27T00:00:00.000Z</lastmod>
-  </url><url>
-    <loc>https://blog.pmunhoz.com/gcp/</loc>
-    <lastmod>2024-07-01T00:00:00.000Z</lastmod>
-  </url><url>
-    <loc>https://blog.pmunhoz.com/gcp/modernizing-data-lakes-data-warehouse-gcp</loc>
-    <lastmod>2024-10-24T00:00:00.000Z</lastmod>
   </url><url>
     <loc>https://blog.pmunhoz.com/github-actions/ci-cd-github-actions-dbt-core</loc>
     <lastmod>2024-09-28T00:00:00.000Z</lastmod>
   </url><url>
     <loc>https://blog.pmunhoz.com/</loc>
-    <lastmod>2025-06-07T07:17:25.001Z</lastmod>
+    <lastmod>2025-06-07T09:24:37.871Z</lastmod>
   </url><url>
     <loc>https://blog.pmunhoz.com/legal</loc>
     <lastmod>2025-06-04T00:00:00.000Z</lastmod>
@@ -71,11 +68,14 @@
     <loc>https://blog.pmunhoz.com/python/simple-python-orchestrator</loc>
     <lastmod>2025-03-19T00:00:00.000Z</lastmod>
   </url><url>
+    <loc>https://blog.pmunhoz.com/tags/GCP</loc>
+    <lastmod>2024-07-01T00:00:00.000Z</lastmod>
+  </url><url>
     <loc>https://blog.pmunhoz.com/tags/dbt</loc>
     <lastmod>2025-06-01T00:00:00.000Z</lastmod>
   </url><url>
     <loc>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</loc>
-    <lastmod>2025-06-07T07:17:25.004Z</lastmod>
+    <lastmod>2025-06-07T09:24:37.874Z</lastmod>
   </url><url>
     <loc>https://blog.pmunhoz.com/website-projects/caviar-airways</loc>
     <lastmod>2025-02-02T00:00:00.000Z</lastmod>
