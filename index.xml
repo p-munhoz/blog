@@ -10,36 +10,42 @@
     <link>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</link>
     <guid>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</guid>
     <description>Learn how to solve the Majority Element problem from LeetCode using Python and the Boyer-Moore Voting Algorithm. Ideal for coding interviews.</description>
-    <pubDate>Sun, 08 Jun 2025 21:03:32 GMT</pubDate>
+    <pubDate>Tue, 10 Jun 2025 20:25:43 GMT</pubDate>
   </item><item>
     <title>Pierre Munhoz — Data Engineering, Analytics &amp; More</title>
     <link>https://blog.pmunhoz.com/</link>
     <guid>https://blog.pmunhoz.com/</guid>
     <description>Discover the engineering blog of Pierre Munhoz, a freelance Data Engineer. Explore insights on data engineering, analytics, and coding.</description>
-    <pubDate>Sun, 08 Jun 2025 21:03:32 GMT</pubDate>
-  </item><item>
-    <title>What is Boyer-Moore majority vote algorithm?</title>
-    <link>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</link>
-    <guid>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</guid>
-    <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using O(1) space and O(n) time.</description>
-    <pubDate>Sun, 08 Jun 2025 21:03:32 GMT</pubDate>
+    <pubDate>Tue, 10 Jun 2025 20:25:43 GMT</pubDate>
   </item><item>
     <title>How to backup Airbyte on Google Cloud Storage?</title>
     <link>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</link>
     <guid>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</guid>
     <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte.</description>
-    <pubDate>Sun, 08 Jun 2025 21:03:32 GMT</pubDate>
+    <pubDate>Tue, 10 Jun 2025 20:25:43 GMT</pubDate>
   </item><item>
-    <title>Docker 101: What Are Containers and Why They Matter</title>
-    <link>https://blog.pmunhoz.com/docker/docker-containers-introduction</link>
-    <guid>https://blog.pmunhoz.com/docker/docker-containers-introduction</guid>
-    <description>What are Docker containers? Learn how they work, why they matter, and how they differ from VMs and traditional servers in modern software development.</description>
-    <pubDate>Sat, 07 Jun 2025 00:00:00 GMT</pubDate>
+    <title>What is Boyer-Moore majority vote algorithm?</title>
+    <link>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</link>
+    <guid>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</guid>
+    <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using O(1) space and O(n) time.</description>
+    <pubDate>Tue, 10 Jun 2025 20:25:43 GMT</pubDate>
+  </item><item>
+    <title>Docker Fundamentals: Your First Steps with Containers</title>
+    <link>https://blog.pmunhoz.com/docker/docker-fundamentals-first-steps-container</link>
+    <guid>https://blog.pmunhoz.com/docker/docker-fundamentals-first-steps-container</guid>
+    <description>Learn how to install Docker and master the essential container commands. A hands-on guide for beginners entering the world of Docker.</description>
+    <pubDate>Tue, 10 Jun 2025 00:00:00 GMT</pubDate>
   </item><item>
     <title>Docker Under the Hood: The Linux Magic Behind Containers</title>
     <link>https://blog.pmunhoz.com/docker/docker-behind-containers</link>
     <guid>https://blog.pmunhoz.com/docker/docker-behind-containers</guid>
     <description>Explore the Linux kernel features behind Docker: namespaces, cgroups, and union filesystems. See how Docker uses them to create isolated, efficient containers.</description>
+    <pubDate>Sat, 07 Jun 2025 00:00:00 GMT</pubDate>
+  </item><item>
+    <title>Docker 101: What Are Containers and Why They Matter</title>
+    <link>https://blog.pmunhoz.com/docker/docker-containers-introduction</link>
+    <guid>https://blog.pmunhoz.com/docker/docker-containers-introduction</guid>
+    <description>What are Docker containers? Learn how they work, why they matter, and how they differ from VMs and traditional servers in modern software development.</description>
     <pubDate>Fri, 06 Jun 2025 00:00:00 GMT</pubDate>
   </item><item>
     <title>Legal Notice of the Engineering Blog - blog.pmunhoz.com</title>
@@ -59,12 +65,6 @@
     <guid>https://blog.pmunhoz.com/tags/dbt</guid>
     <description> Learn how to build scalable and modular data models using dbt. Discover best practices, macros, testing strategies, and advanced dbt features.</description>
     <pubDate>Sun, 01 Jun 2025 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>GDPR for Data Engineers: A Practical Guide to Privacy-Compliant Data Architecture</title>
-    <link>https://blog.pmunhoz.com/data-engineering/gdpr_data_engineers_guide</link>
-    <guid>https://blog.pmunhoz.com/data-engineering/gdpr_data_engineers_guide</guid>
-    <description>A hands-on guide to GDPR for data engineers: pseudonymization, erasure workflows, architecture patterns, and real-world code examples.</description>
-    <pubDate>Mon, 26 May 2025 00:00:00 GMT</pubDate>
   </item>
     </channel>
   </rss>
