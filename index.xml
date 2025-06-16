@@ -10,30 +10,36 @@
     <link>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</link>
     <guid>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</guid>
     <description>Learn how to solve the Majority Element problem from LeetCode using Python and the Boyer-Moore Voting Algorithm. Ideal for coding interviews.</description>
-    <pubDate>Mon, 16 Jun 2025 09:56:48 GMT</pubDate>
+    <pubDate>Mon, 16 Jun 2025 13:30:37 GMT</pubDate>
   </item><item>
     <title>Pierre Munhoz — Data Engineering, Analytics &amp; More</title>
     <link>https://blog.pmunhoz.com/</link>
     <guid>https://blog.pmunhoz.com/</guid>
     <description>Discover the engineering blog of Pierre Munhoz, a freelance Data Engineer. Explore insights on data engineering, analytics, and coding.</description>
-    <pubDate>Mon, 16 Jun 2025 09:56:48 GMT</pubDate>
+    <pubDate>Mon, 16 Jun 2025 13:30:37 GMT</pubDate>
   </item><item>
     <title>How to backup Airbyte on Google Cloud Storage?</title>
     <link>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</link>
     <guid>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</guid>
     <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte.</description>
-    <pubDate>Mon, 16 Jun 2025 09:56:48 GMT</pubDate>
+    <pubDate>Mon, 16 Jun 2025 13:30:37 GMT</pubDate>
   </item><item>
     <title>What is Boyer-Moore majority vote algorithm?</title>
     <link>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</link>
     <guid>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</guid>
     <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using O(1) space and O(n) time.</description>
-    <pubDate>Mon, 16 Jun 2025 09:56:48 GMT</pubDate>
+    <pubDate>Mon, 16 Jun 2025 13:30:37 GMT</pubDate>
   </item><item>
     <title>Efficient &amp; Secure Docker Images: Build Your Own Containers from Scratch</title>
     <link>https://blog.pmunhoz.com/docker/docker-build-your-own-images</link>
     <guid>https://blog.pmunhoz.com/docker/docker-build-your-own-images</guid>
     <description>Master Dockerfile best practices to build efficient, secure & lightweight Docker images. Learn layer caching, image optimization, multi-stage builds and security for faster deployments and robust CI/CD pipelines.</description>
+    <pubDate>Mon, 16 Jun 2025 00:00:00 GMT</pubDate>
+  </item><item>
+    <title>Docker Container Registries: Deep Dive into Image Storage &amp; Distribution</title>
+    <link>https://blog.pmunhoz.com/docker/docker-container-registries</link>
+    <guid>https://blog.pmunhoz.com/docker/docker-container-registries</guid>
+    <description>Learn how to use Docker container registries like Docker Hub, AWS ECR, GCP Artifact Registry, and GitHub CR. Master Docker image distribution, efficient tagging strategies, robust security scanning and best practices for managing your container images from development to production.</description>
     <pubDate>Mon, 16 Jun 2025 00:00:00 GMT</pubDate>
   </item><item>
     <title>Docker Third-Party Images: Your Guide to Faster Development and Deployment</title>
@@ -59,12 +65,6 @@
     <guid>https://blog.pmunhoz.com/docker/docker-behind-containers</guid>
     <description>Explore the Linux kernel features behind Docker: namespaces, cgroups, and union filesystems. See how Docker uses them to create isolated, efficient containers.</description>
     <pubDate>Sat, 07 Jun 2025 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>Docker 101: What Are Containers and Why They Matter</title>
-    <link>https://blog.pmunhoz.com/docker/docker-containers-introduction</link>
-    <guid>https://blog.pmunhoz.com/docker/docker-containers-introduction</guid>
-    <description>What are Docker containers? Learn how they work, why they matter, and how they differ from VMs and traditional servers in modern software development.</description>
-    <pubDate>Fri, 06 Jun 2025 00:00:00 GMT</pubDate>
   </item>
     </channel>
   </rss>
