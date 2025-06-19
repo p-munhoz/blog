@@ -467,6 +467,19 @@ Airflow DAG
 <li>Installs only the required dependencies</li>
 <li>Sets the transform script as the entrypoint</li>
 </ul>
+<p><strong>Building the ETL Image with Terraform</strong></p>
+<p>The ETL Docker image is automatically built as part of our Terraform infrastructure. In <code>main.tf</code>, we define:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="hcl" data-theme="github-light github-dark"><code data-language="hcl" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># Build the ETL transformation image</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">resource</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> &quot;docker_image&quot;</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> &quot;etl_transform&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  name</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> &quot;etl-transform&quot;</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  </span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">  build</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    context</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">    =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> &quot;..&quot;</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    dockerfile</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> &quot;scripts/Dockerfile.etl&quot;</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  }</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">}</span></span></code></pre></figure>
+<p>This ensures that when you run <code>terraform apply</code>, the ETL image is built and available for the Airflow DAGs to use. The <code>context = &quot;..&quot;</code> is necessary because Terraform runs from the terraform/ directory but needs to access the scripts/ folder at the project root.</p>
+<p>This integration demonstrates a key principle of infrastructure as code: not only are we provisioning containers and networks, but we’re also building the custom application images that our platform depends on. Everything needed to run the platform is defined declaratively in our Terraform configuration.</p>
 <p>The beauty of this approach is that our ETL code is:</p>
 <ul>
 <li><strong>Portable</strong>: It can run anywhere Docker is available</li>
