@@ -10,25 +10,31 @@
     <link>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</link>
     <guid>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</guid>
     <description>Learn how to solve the Majority Element problem from LeetCode using Python and the Boyer-Moore Voting Algorithm. Ideal for coding interviews.</description>
-    <pubDate>Thu, 19 Jun 2025 19:26:55 GMT</pubDate>
+    <pubDate>Sat, 27 Sep 2025 21:16:09 GMT</pubDate>
   </item><item>
     <title>Pierre Munhoz — Data Engineering, Analytics &amp; More</title>
     <link>https://blog.pmunhoz.com/</link>
     <guid>https://blog.pmunhoz.com/</guid>
     <description>Discover the engineering blog of Pierre Munhoz, a freelance Data Engineer. Explore insights on data engineering, analytics, and coding.</description>
-    <pubDate>Thu, 19 Jun 2025 19:26:55 GMT</pubDate>
+    <pubDate>Sat, 27 Sep 2025 21:16:09 GMT</pubDate>
   </item><item>
     <title>How to backup Airbyte on Google Cloud Storage?</title>
     <link>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</link>
     <guid>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</guid>
     <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte.</description>
-    <pubDate>Thu, 19 Jun 2025 19:26:55 GMT</pubDate>
+    <pubDate>Sat, 27 Sep 2025 21:16:09 GMT</pubDate>
   </item><item>
     <title>What is Boyer-Moore majority vote algorithm?</title>
     <link>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</link>
     <guid>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</guid>
     <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using O(1) space and O(n) time.</description>
-    <pubDate>Thu, 19 Jun 2025 19:26:55 GMT</pubDate>
+    <pubDate>Sat, 27 Sep 2025 21:16:09 GMT</pubDate>
+  </item><item>
+    <title>How I Broke My Arch Linux Bootloader (and Fixed It with a USB Stick)</title>
+    <link>https://blog.pmunhoz.com/linux/how-i-broke-arch-linux-bootloader</link>
+    <guid>https://blog.pmunhoz.com/linux/how-i-broke-arch-linux-bootloader</guid>
+    <description>1.</description>
+    <pubDate>Sun, 14 Sep 2025 00:00:00 GMT</pubDate>
   </item><item>
     <title>Efficient &amp; Secure Docker Images: Build Your Own Containers from Scratch</title>
     <link>https://blog.pmunhoz.com/docker/docker-build-your-own-images</link>
@@ -59,12 +65,6 @@
     <guid>https://blog.pmunhoz.com/docker/docker-fundamentals-first-steps-container</guid>
     <description>Learn how to install Docker and master the essential container commands. A hands-on guide for beginners entering the world of Docker.</description>
     <pubDate>Tue, 10 Jun 2025 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>Docker Under the Hood: The Linux Magic Behind Containers</title>
-    <link>https://blog.pmunhoz.com/docker/docker-behind-containers</link>
-    <guid>https://blog.pmunhoz.com/docker/docker-behind-containers</guid>
-    <description>Explore the Linux kernel features behind Docker: namespaces, cgroups, and union filesystems. See how Docker uses them to create isolated, efficient containers.</description>
-    <pubDate>Sat, 07 Jun 2025 00:00:00 GMT</pubDate>
   </item>
     </channel>
   </rss>
