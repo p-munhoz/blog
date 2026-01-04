@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en"><head><title>Building a Modern Data Stack from Scratch: Architectural Choices and Best Practices</title><meta charset="utf-8"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted Grotesk:wght@400;700&amp;family=Source Sans Pro:ital,wght@0,400;0,600;1,400;1,600&amp;family=IBM Plex Mono:wght@400;600&amp;display=swap"/><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin="anonymous"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link rel="canonical" href="https://blog.pmunhoz.com/gcp/bi-datawarehouse-from-scratch-gcp"/><meta name="og:site_name" content="❄️ Pierre Munhoz engineering blog"/><meta property="og:title" content="Building a Modern Data Stack from Scratch: Architectural Choices and Best Practices"/><meta property="og:type" content="website"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="Building a Modern Data Stack from Scratch: Architectural Choices and Best Practices"/><meta name="twitter:description" content="Introduction: When PowerBI Becomes the Bottleneck When I joined this French HRIS SaaS company as their first data engineer, the data infrastructure was a ticking time bomb."/><meta property="og:description" content="Introduction: When PowerBI Becomes the Bottleneck When I joined this French HRIS SaaS company as their first data engineer, the data infrastructure was a ticking time bomb."/><meta property="og:image:alt" content="Introduction: When PowerBI Becomes the Bottleneck When I joined this French HRIS SaaS company as their first data engineer, the data infrastructure was a ticking time bomb."/><meta property="twitter:domain" content="blog.pmunhoz.com"/><meta property="og:url" content="https://blog.pmunhoz.com/gcp/bi-datawarehouse-from-scratch-gcp"/><meta property="twitter:url" content="https://blog.pmunhoz.com/gcp/bi-datawarehouse-from-scratch-gcp"/><link rel="icon" href="../static/icon.png"/><meta name="description" content="Introduction: When PowerBI Becomes the Bottleneck When I joined this French HRIS SaaS company as their first data engineer, the data infrastructure was a ticking time bomb."/><meta name="generator" content="Quartz"/><meta name="google-site-verification" content="Uk-Wy3I4Mu2CyP3YBgy_L-a6iyyu_sRBz4GZVsJQyu0"/><meta name="google-site-verification" content="W86SYK7DAZVSK9aULSjhmzXTmWNGqNLKHpGms2aplsM"/><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Building a Modern Data Stack from Scratch: Architectural Choices and Best Practices","author":{"@type":"Person","name":"Pierre Munhoz"},"datePublished":"2026-01-04T00:00:00.000Z","url":"https://blog.pmunhoz.com/gcp/bi-datawarehouse-from-scratch-gcp","publisher":{"@type":"Organization","name":"Pierre Munhoz Engineering Blog"},"description":"Introduction: When PowerBI Becomes the Bottleneck When I joined this French HRIS SaaS company as their first data engineer, the data infrastructure was a ticking time bomb."}</script><link href="../index.css" rel="stylesheet" type="text/css" spa-preserve/><style>.expand-button {
+  position: absolute;
+  display: flex;
+  float: right;
+  padding: 0.4rem;
+  margin: 0.3rem;
+  right: 0;
+  color: var(--gray);
+  border-color: var(--dark);
+  background-color: var(--light);
+  border: 1px solid;
+  border-radius: 5px;
+  opacity: 0;
+  transition: 0.2s;
+}
+.expand-button > svg {
+  fill: var(--light);
+  filter: contrast(0.3);
+}
+.expand-button:hover {
+  cursor: pointer;
+  border-color: var(--secondary);
+}
+.expand-button:focus {
+  outline: 0;
+}
+
+pre:hover > .expand-button {
+  opacity: 1;
+  transition: 0.2s;
+}
+
+#mermaid-container {
+  position: fixed;
+  contain: layout;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: none;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+}
+#mermaid-container.active {
+  display: inline-block;
+}
+#mermaid-container > #mermaid-space {
+  border: 1px solid var(--lightgray);
+  background-color: var(--light);
+  border-radius: 5px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 80vh;
+  width: 80vw;
+  overflow: hidden;
+}
+#mermaid-container > #mermaid-space > .mermaid-content {
+  padding: 2rem;
+  position: relative;
+  transform-origin: 0 0;
+  transition: transform 0.1s ease;
+  overflow: visible;
+  min-height: 200px;
+  min-width: 200px;
+}
+#mermaid-container > #mermaid-space > .mermaid-content pre {
+  margin: 0;
+  border: none;
+}
+#mermaid-container > #mermaid-space > .mermaid-content svg {
+  max-width: none;
+  height: auto;
+}
+#mermaid-container > #mermaid-space > .mermaid-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: var(--light);
+  border: 1px solid var(--lightgray);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--lightgray);
+  background: var(--light);
+  color: var(--dark);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: var(--bodyFont);
+  transition: all 0.2s ease;
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button:hover {
+  background: var(--lightgray);
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button:active {
+  transform: translateY(1px);
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button:nth-child(2) {
+  width: auto;
+  padding: 0 12px;
+  font-size: 14px;
+}
+/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiL2hvbWUvcnVubmVyL3dvcmsvcXVhcnR6L3F1YXJ0ei9wcml2YXRlLXJlcG8vcXVhcnR6L2NvbXBvbmVudHMvc3R5bGVzIiwic291cmNlcyI6WyJtZXJtYWlkLmlubGluZS5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7O0FBRUE7RUFDRTtFQUNBOztBQUdGO0VBQ0U7RUFDQTs7QUFHRjtFQUNFOzs7QUFLRjtFQUNFO0VBQ0E7OztBQUlKO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTs7QUFFQTtFQUNFOztBQUdGO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7O0FBRUE7RUFDRTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTs7QUFFQTtFQUNFO0VBQ0E7O0FBR0Y7RUFDRTtFQUNBOztBQUlKO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTs7QUFFQTtFQUNFO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7O0FBRUE7RUFDRTs7QUFHRjtFQUNFOztBQUlGO0VBQ0U7RUFDQTtFQUNBIiwic291cmNlc0NvbnRlbnQiOlsiLmV4cGFuZC1idXR0b24ge1xuICBwb3NpdGlvbjogYWJzb2x1dGU7XG4gIGRpc3BsYXk6IGZsZXg7XG4gIGZsb2F0OiByaWdodDtcbiAgcGFkZGluZzogMC40cmVtO1xuICBtYXJnaW46IDAuM3JlbTtcbiAgcmlnaHQ6IDA7IC8vIE5PVEU6IHJpZ2h0IHdpbGwgYmUgc2V0IGluIG1lcm1haWQuaW5saW5lLnRzXG4gIGNvbG9yOiB2YXIoLS1ncmF5KTtcbiAgYm9yZGVyLWNvbG9yOiB2YXIoLS1kYXJrKTtcbiAgYmFja2dyb3VuZC1jb2xvcjogdmFyKC0tbGlnaHQpO1xuICBib3JkZXI6IDFweCBzb2xpZDtcbiAgYm9yZGVyLXJhZGl1czogNXB4O1xuICBvcGFjaXR5OiAwO1xuICB0cmFuc2l0aW9uOiAwLjJzO1xuXG4gICYgPiBzdmcge1xuICAgIGZpbGw6IHZhcigtLWxpZ2h0KTtcbiAgICBmaWx0ZXI6IGNvbnRyYXN0KDAuMyk7XG4gIH1cblxuICAmOmhvdmVyIHtcbiAgICBjdXJzb3I6IHBvaW50ZXI7XG4gICAgYm9yZGVyLWNvbG9yOiB2YXIoLS1zZWNvbmRhcnkpO1xuICB9XG5cbiAgJjpmb2N1cyB7XG4gICAgb3V0bGluZTogMDtcbiAgfVxufVxuXG5wcmUge1xuICAmOmhvdmVyID4gLmV4cGFuZC1idXR0b24ge1xuICAgIG9wYWNpdHk6IDE7XG4gICAgdHJhbnNpdGlvbjogMC4ycztcbiAgfVxufVxuXG4jbWVybWFpZC1jb250YWluZXIge1xuICBwb3NpdGlvbjogZml4ZWQ7XG4gIGNvbnRhaW46IGxheW91dDtcbiAgei1pbmRleDogOTk5O1xuICBsZWZ0OiAwO1xuICB0b3A6IDA7XG4gIHdpZHRoOiAxMDB2dztcbiAgaGVpZ2h0OiAxMDB2aDtcbiAgb3ZlcmZsb3c6IGhpZGRlbjtcbiAgZGlzcGxheTogbm9uZTtcbiAgYmFja2Ryb3AtZmlsdGVyOiBibHVyKDRweCk7XG4gIGJhY2tncm91bmQ6IHJnYmEoMCwgMCwgMCwgMC41KTtcblxuICAmLmFjdGl2ZSB7XG4gICAgZGlzcGxheTogaW5saW5lLWJsb2NrO1xuICB9XG5cbiAgJiA+ICNtZXJtYWlkLXNwYWNlIHtcbiAgICBib3JkZXI6IDFweCBzb2xpZCB2YXIoLS1saWdodGdyYXkpO1xuICAgIGJhY2tncm91bmQtY29sb3I6IHZhcigtLWxpZ2h0KTtcbiAgICBib3JkZXItcmFkaXVzOiA1cHg7XG4gICAgcG9zaXRpb246IGZpeGVkO1xuICAgIHRvcDogNTAlO1xuICAgIGxlZnQ6IDUwJTtcbiAgICB0cmFuc2Zvcm06IHRyYW5zbGF0ZSgtNTAlLCAtNTAlKTtcbiAgICBoZWlnaHQ6IDgwdmg7XG4gICAgd2lkdGg6IDgwdnc7XG4gICAgb3ZlcmZsb3c6IGhpZGRlbjtcblxuICAgICYgPiAubWVybWFpZC1jb250ZW50IHtcbiAgICAgIHBhZGRpbmc6IDJyZW07XG4gICAgICBwb3NpdGlvbjogcmVsYXRpdmU7XG4gICAgICB0cmFuc2Zvcm0tb3JpZ2luOiAwIDA7XG4gICAgICB0cmFuc2l0aW9uOiB0cmFuc2Zvcm0gMC4xcyBlYXNlO1xuICAgICAgb3ZlcmZsb3c6IHZpc2libGU7XG4gICAgICBtaW4taGVpZ2h0OiAyMDBweDtcbiAgICAgIG1pbi13aWR0aDogMjAwcHg7XG5cbiAgICAgIHByZSB7XG4gICAgICAgIG1hcmdpbjogMDtcbiAgICAgICAgYm9yZGVyOiBub25lO1xuICAgICAgfVxuXG4gICAgICBzdmcge1xuICAgICAgICBtYXgtd2lkdGg6IG5vbmU7XG4gICAgICAgIGhlaWdodDogYXV0bztcbiAgICAgIH1cbiAgICB9XG5cbiAgICAmID4gLm1lcm1haWQtY29udHJvbHMge1xuICAgICAgcG9zaXRpb246IGFic29sdXRlO1xuICAgICAgYm90dG9tOiAyMHB4O1xuICAgICAgcmlnaHQ6IDIwcHg7XG4gICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgZ2FwOiA4cHg7XG4gICAgICBwYWRkaW5nOiA4cHg7XG4gICAgICBiYWNrZ3JvdW5kOiB2YXIoLS1saWdodCk7XG4gICAgICBib3JkZXI6IDFweCBzb2xpZCB2YXIoLS1saWdodGdyYXkpO1xuICAgICAgYm9yZGVyLXJhZGl1czogNnB4O1xuICAgICAgYm94LXNoYWRvdzogMCAycHggNHB4IHJnYmEoMCwgMCwgMCwgMC4xKTtcbiAgICAgIHotaW5kZXg6IDI7XG5cbiAgICAgIC5tZXJtYWlkLWNvbnRyb2wtYnV0dG9uIHtcbiAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAgICAgICAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7XG4gICAgICAgIHdpZHRoOiAzMnB4O1xuICAgICAgICBoZWlnaHQ6IDMycHg7XG4gICAgICAgIHBhZGRpbmc6IDA7XG4gICAgICAgIGJvcmRlcjogMXB4IHNvbGlkIHZhcigtLWxpZ2h0Z3JheSk7XG4gICAgICAgIGJhY2tncm91bmQ6IHZhcigtLWxpZ2h0KTtcbiAgICAgICAgY29sb3I6IHZhcigtLWRhcmspO1xuICAgICAgICBib3JkZXItcmFkaXVzOiA0cHg7XG4gICAgICAgIGN1cnNvcjogcG9pbnRlcjtcbiAgICAgICAgZm9udC1zaXplOiAxNnB4O1xuICAgICAgICBmb250LWZhbWlseTogdmFyKC0tYm9keUZvbnQpO1xuICAgICAgICB0cmFuc2l0aW9uOiBhbGwgMC4ycyBlYXNlO1xuXG4gICAgICAgICY6aG92ZXIge1xuICAgICAgICAgIGJhY2tncm91bmQ6IHZhcigtLWxpZ2h0Z3JheSk7XG4gICAgICAgIH1cblxuICAgICAgICAmOmFjdGl2ZSB7XG4gICAgICAgICAgdHJhbnNmb3JtOiB0cmFuc2xhdGVZKDFweCk7XG4gICAgICAgIH1cblxuICAgICAgICAvLyBTdHlsZSB0aGUgcmVzZXQgYnV0dG9uIGRpZmZlcmVudGx5XG4gICAgICAgICY6bnRoLWNoaWxkKDIpIHtcbiAgICAgICAgICB3aWR0aDogYXV0bztcbiAgICAgICAgICBwYWRkaW5nOiAwIDEycHg7XG4gICAgICAgICAgZm9udC1zaXplOiAxNHB4O1xuICAgICAgICB9XG4gICAgICB9XG4gICAgfVxuICB9XG59XG4iXX0= */</style><link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet" type="text/css" spa-preserve/><script src="../prescript.js" type="application/javascript" spa-preserve></script><script type="application/javascript" spa-preserve>const fetchData = fetch("../static/contentIndex.json").then(data => data.json())</script><link rel="alternate" type="application/rss+xml" title="RSS Feed" href="https://blog.pmunhoz.com/index.xml"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image" content="https://blog.pmunhoz.com/gcp/bi-datawarehouse-from-scratch-gcp-og-image.webp"/><meta property="og:image:url" content="https://blog.pmunhoz.com/gcp/bi-datawarehouse-from-scratch-gcp-og-image.webp"/><meta name="twitter:image" content="https://blog.pmunhoz.com/gcp/bi-datawarehouse-from-scratch-gcp-og-image.webp"/><meta property="og:image:type" content="image/.webp"/></head><body data-slug="gcp/bi-datawarehouse-from-scratch-gcp"><div id="quartz-root" class="page"><div id="quartz-body"><div class="left sidebar"><h2 class="page-title"><a href=".." class="page-title-link">❄️ Pierre Munhoz engineering blog</a></h2><div class="spacer mobile-only"></div><div style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 1rem;"><div style="flex-grow: 1; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><div class="search"><button class="search-button"><p>Search</p><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title>Search</title><g class="search-path" fill="none"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"></path><circle cx="8" cy="8" r="7"></circle></g></svg></button><div class="search-container"><div class="search-space"><input autocomplete="off" class="search-bar" name="search" type="text" aria-label="Search for something" placeholder="Search for something"/><div class="search-layout" data-preview="true"></div></div></div></div></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="darkmode"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="dayIcon" x="0px" y="0px" viewBox="0 0 35 35" style="enable-background:new 0 0 35 35" xml:space="preserve" aria-label="Dark mode"><title>Dark mode</title><path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="nightIcon" x="0px" y="0px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100" xml:space="preserve" aria-label="Light mode"><title>Light mode</title><path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571  C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23  c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369  c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65  c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"></path></svg></button></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="readermode"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="readerIcon" fill="currentColor" stroke="currentColor" stroke-width="0.2" stroke-linecap="round" stroke-linejoin="round" width="64px" height="64px" viewBox="0 0 24 24" aria-label="Reader mode"><title>Reader mode</title><g transform="translate(-1.8, -1.8) scale(1.15, 1.2)"><path d="M8.9891247,2.5 C10.1384702,2.5 11.2209868,2.96705384 12.0049645,3.76669482 C12.7883914,2.96705384 13.8709081,2.5 15.0202536,2.5 L18.7549359,2.5 C19.1691495,2.5 19.5049359,2.83578644 19.5049359,3.25 L19.5046891,4.004 L21.2546891,4.00457396 C21.6343849,4.00457396 21.9481801,4.28672784 21.9978425,4.6528034 L22.0046891,4.75457396 L22.0046891,20.25 C22.0046891,20.6296958 21.7225353,20.943491 21.3564597,20.9931534 L21.2546891,21 L2.75468914,21 C2.37499337,21 2.06119817,20.7178461 2.01153575,20.3517706 L2.00468914,20.25 L2.00468914,4.75457396 C2.00468914,4.37487819 2.28684302,4.061083 2.65291858,4.01142057 L2.75468914,4.00457396 L4.50368914,4.004 L4.50444233,3.25 C4.50444233,2.87030423 4.78659621,2.55650904 5.15267177,2.50684662 L5.25444233,2.5 L8.9891247,2.5 Z M4.50368914,5.504 L3.50468914,5.504 L3.50468914,19.5 L10.9478955,19.4998273 C10.4513189,18.9207296 9.73864328,18.5588115 8.96709342,18.5065584 L8.77307039,18.5 L5.25444233,18.5 C4.87474657,18.5 4.56095137,18.2178461 4.51128895,17.8517706 L4.50444233,17.75 L4.50368914,5.504 Z M19.5049359,17.75 C19.5049359,18.1642136 19.1691495,18.5 18.7549359,18.5 L15.2363079,18.5 C14.3910149,18.5 13.5994408,18.8724714 13.0614828,19.4998273 L20.5046891,19.5 L20.5046891,5.504 L19.5046891,5.504 L19.5049359,17.75 Z M18.0059359,3.999 L15.0202536,4 L14.8259077,4.00692283 C13.9889509,4.06666544 13.2254227,4.50975805 12.7549359,5.212 L12.7549359,17.777 L12.7782651,17.7601316 C13.4923805,17.2719483 14.3447024,17 15.2363079,17 L18.0059359,16.999 L18.0056891,4.798 L18.0033792,4.75457396 L18.0056891,4.71 L18.0059359,3.999 Z M8.9891247,4 L6.00368914,3.999 L6.00599909,4.75457396 L6.00599909,4.75457396 L6.00368914,4.783 L6.00368914,16.999 L8.77307039,17 C9.57551536,17 10.3461406,17.2202781 11.0128313,17.6202194 L11.2536891,17.776 L11.2536891,5.211 C10.8200889,4.56369974 10.1361548,4.13636104 9.37521067,4.02745763 L9.18347055,4.00692283 L8.9891247,4 Z"></path></g></svg></button></div></div><div id="newsletter-cta" class="undefined newsletter-cta"><strong>📬 Newsletter</strong>Get bi-weekly insights &amp; tips.<br/><button id="open-newsletter-modal" class="subscribe-button">Subscribe here →</button></div><div id="newsletter-modal" class="newsletter-modal"><div class="modal-content"><button class="close-button">×</button><h3>🚀 Elevate Your Data Engineering Skills</h3><p>Beyond the blog: Receive bi-weekly doses of actionable data engineering strategies, exclusive technical experiments, and reflections on boosting your creative productivity as a technical professional.</p><form class="newsletter-form"><input type="email" placeholder="Your best engineering email" required/><button type="submit">Subscribe</button><p><i>No spam, pure value.</i></p><button id="already-subscribed-btn" class="already-subscribed-button">I'm already subscribed</button></form></div></div><div class="explorer" data-behavior="link" data-collapsed="collapsed" data-savestate="true" data-data-fns="{&quot;order&quot;:[&quot;filter&quot;,&quot;map&quot;,&quot;sort&quot;],&quot;sortFn&quot;:&quot;(a,b)=>!a.isFolder&amp;&amp;!b.isFolder||a.isFolder&amp;&amp;b.isFolder?a.displayName.localeCompare(b.displayName,void 0,{numeric:!0,sensitivity:\&quot;base\&quot;}):!a.isFolder&amp;&amp;b.isFolder?1:-1&quot;,&quot;filterFn&quot;:&quot;node=>!node.displayName.toLowerCase().startsWith(\&quot;legal notice\&quot;)&amp;&amp;!node.displayName.toLowerCase().startsWith(\&quot;privacy policy\&quot;)&amp;&amp;node.slugSegment!==\&quot;tags\&quot;&quot;,&quot;mapFn&quot;:&quot;node=>node&quot;}"><button type="button" class="explorer-toggle mobile-explorer hide-until-loaded" data-mobile="true" aria-controls="explorer-content"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide-menu"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button><button type="button" class="title-button explorer-toggle desktop-explorer" data-mobile="false" aria-expanded="true"><h2>Explorer</h2><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div class="explorer-content" aria-expanded="false"><ul class="explorer-ul overflow" id="list-0"><li class="overflow-end"></li></ul></div><template id="template-file"><li><a href="#"></a></li></template><template id="template-folder"><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div><button class="folder-button"><span class="folder-title"></span></button></div></div><div class="folder-outer"><ul class="content"></ul></div></li></template></div></div><div class="center"><div class="page-header"><header><div class="mobile-header"><a href=".." class="mobile-title">❄️ Pierre Munhoz engineering blog</a></div></header><div class="popover-hint"><nav class="breadcrumb-container" aria-label="breadcrumbs"><div class="breadcrumb-element"><a href="../">Home</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../gcp/">gcp</a><p> ❯ </p></div><div class="breadcrumb-element"><a href>Building a Modern Data Stack from Scratch: Architectural Choices and Best Practices</a></div></nav><h1 class="article-title">Building a Modern Data Stack from Scratch: Architectural Choices and Best Practices</h1><p show-comma="true" class="content-meta"><time datetime="2026-01-04T00:00:00.000Z">Jan 04, 2026</time><span>9 min read</span></p><ul class="tags"><li><a href="../tags/bigquery" class="internal tag-link">bigquery</a></li><li><a href="../tags/dbt" class="internal tag-link">dbt</a></li><li><a href="../tags/bi" class="internal tag-link">bi</a></li><li><a href="../tags/GCP" class="internal tag-link">GCP</a></li><li><a href="../tags/data-engineering" class="internal tag-link">data-engineering</a></li></ul></div></div><article class="popover-hint"><h2 id="introduction-when-powerbi-becomes-the-bottleneck">Introduction: When PowerBI Becomes the Bottleneck<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#introduction-when-powerbi-becomes-the-bottleneck" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>When I joined this French HRIS SaaS company as their first data engineer, the data infrastructure was a ticking time bomb. The existing setup was entirely built around <strong>PowerBI</strong> with direct connections to multiple sources (Salesforce, Google Sheets, internal databases) and all transformations were handled directly within PowerBI itself.</p>
+<p><strong>The symptoms were critical:</strong></p>
+<ul>
+<li>Hundreds of intermediate tables created in PowerBI with no documentation</li>
+<li>Query timeouts becoming the norm as data volume grew</li>
+<li>Zero version control or testing capability</li>
+<li>No clear data lineage or governance</li>
+<li>Each dashboard refresh could break dependent reports</li>
+</ul>
+<p>This wasn’t a sustainable architecture, it was a house of cards waiting to collapse. The mission was clear: build a modern, scalable data stack from the ground up in under two months, with a strict budget constraint.</p>
+<h2 id="the-cloud-platform-battle-why-gcp-over-azure">The Cloud Platform Battle: Why GCP Over Azure?<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-cloud-platform-battle-why-gcp-over-azure" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The company was deeply integrated into the <strong>Microsoft ecosystem</strong> for office tools making Azure seem like the “obvious” choice. However, as a data engineer planning to center the stack around <strong>dbt</strong>, I knew this decision deserved deeper analysis.</p>
+<h3 id="the-azure-friction-points">The Azure friction points:<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-azure-friction-points" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ul>
+<li>The <code>dbt-synapse</code> adapter at the time required constant workarounds for basic operations</li>
+<li>Synapse Analytics demanded manual tuning (distribution keys, columnstore indexes) that felt like legacy DBA work</li>
+<li>The compute/storage coupling meant we couldn’t scale independently</li>
+<li>For a team with junior analysts learning SQL, the T-SQL specificities added unnecessary complexity</li>
+</ul>
+<h3 id="the-poc-on-gcp">The PoC on GCP<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-poc-on-gcp" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Rather than arguing in theory, I proposed a <strong>one-week proof of concept</strong> using GCP’s generous free trial. The arguments that convinced management:</p>
+<ol>
+<li><strong>Zero financial risk</strong>: Free trial covered the entire PoC</li>
+<li><strong>Speed</strong>: Functional pipeline with real data in 5 days vs. estimated 3-4 weeks on Azure</li>
+<li><strong>Cost projection</strong>: €100-200/month for production vs. €2,000+/month on competing solutions</li>
+<li><strong>Skill alignment</strong>: The stack was optimized for data engineering + BI collaboration</li>
+</ol>
+<h2 id="infrastructure-as-code-first-the-terraform-foundation">Infrastructure as Code First: The Terraform Foundation<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#infrastructure-as-code-first-the-terraform-foundation" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>One of the most critical decisions was to start with <strong>Infrastructure as Code</strong> from day one, not as an afterthought. Using Terraform before writing any data pipeline code provided immediate benefits:</p>
+<h3 id="architecture-principles">Architecture Principles<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#architecture-principles" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p><strong>Module Structure:</strong></p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="tree" data-theme="github-light github-dark"><code data-language="tree" data-theme="github-light github-dark" style="display:grid;"><span data-line><span>terraform/</span></span>
+<span data-line><span>├── modules/</span></span>
+<span data-line><span>│   ├── bigquery_dataset/</span></span>
+<span data-line><span>│   ├── bigquery_access/</span></span>
+<span data-line><span>│   ├── bigquery_sandbox/      # Dev environments</span></span>
+<span data-line><span>│   ├── compute_engine/</span></span>
+<span data-line><span>│   ├── gcs_buckets/</span></span>
+<span data-line><span>│   ├── gcs_buckets_iam/</span></span>
+<span data-line><span>│   └── service_accounts/</span></span>
+<span data-line><span>├── environments/</span></span>
+<span data-line><span>│   ├── dev/</span></span>
+<span data-line><span>│   │   ├── main.tf</span></span>
+<span data-line><span>│   │   └── terraform.tfvars</span></span>
+<span data-line><span>│   └── prod/</span></span>
+<span data-line><span>│       ├── main.tf</span></span>
+<span data-line><span>│       └── terraform.tfvars</span></span>
+<span data-line><span>└── backend.tf                 # Remote state on GCS</span></span></code></pre></figure>
+<p><strong>Key decisions:</strong></p>
+<ul>
+<li><strong>Workspaces per environment</strong> (dev/prod) for complete isolation</li>
+<li><strong>YAML + tfvars</strong> for configuration to avoid hardcoding sensitive data</li>
+<li><strong>Remote backend on GCS</strong> from the start for state management and collaboration</li>
+<li><strong>Separate sandbox datasets</strong> for each analyst to experiment safely</li>
+</ul>
+<p><strong>Why this mattered:</strong></p>
+<ul>
+<li>Reproducible infrastructure in minutes (critical for disaster recovery)</li>
+<li>Clear audit trail of all infrastructure changes</li>
+<li>Onboarding new environments became trivial</li>
+<li>No manual clicking in the GCP console = no configuration drift</li>
+</ul>
+<h2 id="data-ingestion-the-self-hosted-airbyte-strategy">Data Ingestion: The Self-Hosted Airbyte Strategy<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#data-ingestion-the-self-hosted-airbyte-strategy" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>For data ingestion, I chose <strong>Airbyte</strong> in a self-hosted configuration rather than the managed cloud version. This decision was driven by economics and control.</p>
+<h3 id="the-cost-equation">The Cost Equation<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-cost-equation" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ul>
+<li>Budget allocated: <strong>€10,000/month</strong></li>
+<li>Actual spend: <strong>€100/month</strong> (including BigQuery usage)</li>
+</ul>
+<p><strong>Self-hosted setup:</strong></p>
+<ul>
+<li><strong>VM</strong>: n1-standard-2 (~€50/month, running 24/7)</li>
+<li><strong>BigQuery</strong>: ~€50/month (low usage initially, with PowerBI extracts reducing query volume)</li>
+<li><strong>Total</strong>: 1% of allocated budget</li>
+</ul>
+<p><strong>The trade-offs:</strong></p>
+<ul>
+<li>✅ 100x cost reduction</li>
+<li>✅ Full control over upgrades and configuration</li>
+<li>✅ Data never leaves our GCP project</li>
+<li>❌ Manual maintenance responsibility</li>
+<li>❌ Need for backup strategy</li>
+</ul>
+<h3 id="operational-best-practices">Operational Best Practices<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#operational-best-practices" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p><strong>Backup Strategy:</strong></p>
+<ul>
+<li>Daily automated backups of the Airbyte Postgres database via bash script</li>
+<li>Stored in GCS with 30-day retention</li>
+<li>Enabled safe upgrades without fear of losing connector configurations</li>
+</ul>
+<p><strong>Monitoring:</strong></p>
+<ul>
+<li>Native Airbyte alerting configured for failed syncs</li>
+<li>GCP monitoring on VM health metrics</li>
+<li>Weekly review of connector performance</li>
+</ul>
+<p><strong>When to consider managed:</strong> When your data ingestion costs exceed €500-1,000/month in compute or when the team lacks bandwidth for maintenance, the managed version becomes cost-effective.</p>
+<h2 id="custom-orchestration-dagster-for-the-gaps">Custom Orchestration: Dagster for the Gaps<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#custom-orchestration-dagster-for-the-gaps" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>While Airbyte covered 80% of our data sources, certain systems required custom extraction logic:</p>
+<ul>
+<li><strong>MSBC</strong> (accounting system with complex API)</li>
+<li><strong>Salesloft</strong> (sales engagement platform)</li>
+<li><strong>Anaplan</strong> (financial planning)</li>
+<li><strong>Trustpilot</strong> (reviews)</li>
+<li><strong>360Learning</strong> (LMS platform)</li>
+</ul>
+<h3 id="why-dagster-over-airflow">Why Dagster Over Airflow?<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#why-dagster-over-airflow" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Having prior experience with Dagster, I chose it for several reasons:</p>
+<ul>
+<li><strong>Native Python experience</strong>: More intuitive for data engineers vs. Airflow’s DAG syntax</li>
+<li><strong>Built-in data quality</strong>: Dagster’s asset-oriented approach aligned with our dbt models</li>
+<li><strong>Modern development experience</strong>: Better local development and testing</li>
+<li><strong>Comptability with Airbyte &amp; dbt</strong></li>
+</ul>
+<h3 id="cost-optimization-pattern">Cost Optimization Pattern<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#cost-optimization-pattern" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>The Dagster VM employed a <strong>scheduled shutdown strategy:</strong></p>
+<ul>
+<li>VM powered on via Cloud Scheduler at specific times (e.g., 6 AM daily)</li>
+<li>Jobs executed via Dagster’s sensor/schedule system</li>
+<li>Automatic shutdown after job completion</li>
+<li><strong>Result</strong>: ~8 hours/day runtime vs. 24/7 = 66% cost reduction</li>
+</ul>
+<h2 id="transformation-layer-dbt-core--cicd">Transformation Layer: dbt Core + CI/CD<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#transformation-layer-dbt-core--cicd" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The transformation layer was built entirely on <strong>dbt Core</strong> (not dbt Cloud) with a custom CI/CD pipeline on GitHub Actions.</p>
+<h3 id="why-dbt-for-junior-analysts">Why dbt for Junior Analysts?<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#why-dbt-for-junior-analysts" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>The team consisted primarily of junior analysts more comfortable with SQL than Python. dbt provided:</p>
+<ul>
+<li><strong>SQL-first approach</strong>: No need to learn pandas or Spark</li>
+<li><strong>Gradual learning curve</strong>: Start with simple SELECT statements, progress to Jinja macros</li>
+<li><strong>Built-in testing</strong>: Data quality checks as code</li>
+<li><strong>Clear documentation</strong>: Auto-generated docs from YAML configs</li>
+</ul>
+<h3 id="the-deployment-pipeline">The Deployment Pipeline<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-deployment-pipeline" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p><strong>Branch Strategy:</strong></p>
+<ul>
+<li><code>dev</code> branch: Continuous deployment to dev environment</li>
+<li><code>main</code> branch: Production deployment only via releases</li>
+</ul>
+<p><strong>Workflow:</strong></p>
+<ol>
+<li>Developer creates feature branch</li>
+<li>Opens PR → GitHub Actions runs:
+<ul>
+<li><code>dbt compile</code> (syntax check)</li>
+<li><code>dbt run --select state:modified+ --defer</code> (only changed models)</li>
+<li><code>dbt test</code> (data quality tests)</li>
+</ul>
+</li>
+<li>On merge to <code>dev</code> → Full deployment to dev BigQuery</li>
+<li>To release to production:
+<ul>
+<li>Create GitHub Release</li>
+<li>Automated deployment to prod BigQuery</li>
+<li>dbt manifest uploaded to GCS for lineage tracking</li>
+</ul>
+</li>
+</ol>
+<p><strong>The <code>--defer</code> Strategy:</strong></p>
+<p>The <code>--defer</code> flag was crucial for CI/CD efficiency:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> run</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> --select</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> state:modified+</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> --defer</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> --state</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> ./prod-manifest/</span></span></code></pre></figure>
+<p>This meant:</p>
+<ul>
+<li>Only rebuild models that changed (and their downstream dependencies)</li>
+<li>Reference production data for unchanged upstream models</li>
+<li>CI/CD runs completing in minutes instead of hours</li>
+<li>Reduced BigQuery costs during development</li>
+</ul>
+<h4 id="testing-strategy">Testing Strategy<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#testing-strategy" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h4>
+<p>Implemented tests progressively:</p>
+<ol>
+<li><strong>Phase 1</strong>: <code>Unique</code> and <code>not_null</code> tests on primary keys</li>
+<li><strong>Phase 2</strong>: Relationships tests between models</li>
+<li><strong>Phase 3</strong>: Custom Great Expectations tests for business logic</li>
+</ol>
+<h2 id="living-documentation-dbt-docs-on-cloud-run">Living Documentation: dbt Docs on Cloud Run<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#living-documentation-dbt-docs-on-cloud-run" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Rather than using dbt Cloud for hosting documentation, I built a self-hosted solution:</p>
+<p><strong>Architecture:</strong></p>
+<ul>
+<li>dbt generates static docs (<code>dbt docs generate</code>)</li>
+<li>CI/CD uploads docs to GCS bucket</li>
+<li><strong>Cloud Run</strong> serves the static site</li>
+<li><strong>Identity-Aware Proxy (IAP)</strong> handles authentication</li>
+</ul>
+<p><strong>Benefits:</strong></p>
+<ul>
+<li>Access control via IAP tied to company Google Workspace</li>
+<li>Always up-to-date (regenerated on every deployment)</li>
+<li>Full control over styling and customization</li>
+</ul>
+<p><strong>Trade-off:</strong> No IDE or scheduler from dbt Cloud but we didn’t need them given our GitHub Actions + BigQuery setup.</p>
+<h2 id="change-management-training-the-team">Change Management: Training the Team<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#change-management-training-the-team" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Building the stack was only half the battle. Enabling the team to use it effectively was equally critical.</p>
+<h3 id="training-approach">Training Approach<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#training-approach" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p><strong>Format:</strong></p>
+<ul>
+<li><strong>Documentation</strong>: Comprehensive Confluence space with architectural diagrams</li>
+<li><strong>Peer programming sessions</strong>: Pairing junior analysts with me on real dbt models</li>
+<li><strong>Code review culture</strong>: Every PR reviewed for both correctness and style</li>
+</ul>
+<p><strong>Key Topics Covered:</strong></p>
+<ul>
+<li>dbt modeling patterns (staging → intermediate → marts)</li>
+<li>When to use Jinja macros vs. plain SQL</li>
+<li>Testing strategies and data quality expectations</li>
+<li>Git workflow and PR best practices</li>
+<li>How to debug failed dbt runs</li>
+</ul>
+<p><strong>Challenges Faced:</strong></p>
+<ul>
+<li>Resistance from PowerBI power users who felt their expertise was being devalued</li>
+<li>Learning curve for Git/GitHub (many analysts had never used version control)</li>
+<li>Balancing speed vs. quality in early deliverables</li>
+</ul>
+<p><strong>What Worked:</strong></p>
+<ul>
+<li>Starting with “quick wins” (migrating simple dashboards first)</li>
+<li>Celebrating successful PRs from junior team members</li>
+<li>Creating a “dbt champions” program where early adopters helped train others</li>
+</ul>
+<h2 id="lessons-learned--best-practices">Lessons Learned &amp; Best Practices<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#lessons-learned--best-practices" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<h3 id="what-id-do-again">What I’d Do Again<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#what-id-do-again" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ol>
+<li><strong>Infrastructure as Code from Day 1</strong>
+<ul>
+<li>Saved countless hours in environment setup</li>
+<li>Made disaster recovery trivial</li>
+<li>Enabled true GitOps workflow</li>
+</ul>
+</li>
+<li><strong>Economic Pragmatism</strong>
+<ul>
+<li>Self-hosted tools (Airbyte, Dagster) reduced costs by 99%</li>
+<li>Allowed us to prove value before scaling investment</li>
+<li>€100/month stack vs. €10k budget created enormous credibility</li>
+</ul>
+</li>
+<li><strong>The PoC Strategy</strong>
+<ul>
+<li>One week to prove technical feasibility beat months of theoretical debates</li>
+<li>Made the decision objective, not political</li>
+</ul>
+</li>
+<li><strong>Prioritizing Developer Experience</strong>
+<ul>
+<li>Choosing tools (dbt, BigQuery) that matched team skill levels</li>
+<li>Investing in CI/CD early prevented technical debt</li>
+<li>Focus on documentation paid dividends during onboarding</li>
+</ul>
+</li>
+<li><strong>Modular Architecture</strong>
+<ul>
+<li>Terraform modules made infrastructure changes safe</li>
+<li>dbt’s modular models allowed parallel development</li>
+<li>Clear separation of concerns (ingestion → transformation → serving)</li>
+</ul>
+</li>
+</ol>
+<h3 id="what-id-do-differently">What I’d Do Differently<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#what-id-do-differently" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<ol>
+<li><strong>Start with Data Quality Monitoring Earlier</strong>
+<ul>
+<li>Would implement Great Expectations or dbt tests from week 1</li>
+<li>Catching data issues in dev vs. production saves significant time</li>
+</ul>
+</li>
+<li><strong>More Aggressive Cost Monitoring</strong>
+<ul>
+<li>While costs were low, setting up budgets and alerts proactively would prevent surprises at scale</li>
+</ul>
+</li>
+<li><strong>Formalize the Backup Strategy Sooner</strong>
+<ul>
+<li>The daily Postgres backup script was added reactively</li>
+<li>Should have been part of the initial Terraform deployment</li>
+</ul>
+</li>
+<li><strong>Data Catalog from the Start</strong>
+<ul>
+<li>dbt docs are great but a proper data catalog (DataHub, Atlan) would have helped with discovery</li>
+<li>The longer you wait, the harder the migration</li>
+</ul>
+</li>
+</ol>
+<h3 id="deployment-timeline-reality">Deployment Timeline Reality<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#deployment-timeline-reality" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>From zero to fully operational stack: <strong>6 weeks</strong> (depends on the amount of ingestion, complexity regarding PII, GDPR etc…)</p>
+<p>This was only possible because of:</p>
+<ul>
+<li>Single decision-maker (me) on technical choices</li>
+<li>Management trust in the approach</li>
+<li>Focus on “good enough” over perfection initially</li>
+</ul>
+<h2 id="architecture-overview">Architecture Overview<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#architecture-overview" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Here’s a visual representation of the final data stack architecture:</p>
+<p><img src="../gcp/attachments/gcp-data-stack.png" width="auto" height="auto" alt="Example of Data Stack on GCP"/></p>
+<p><strong>Architecture Highlights:</strong></p>
+<ul>
+<li><strong>Ingestion Layer</strong>: Self-hosted Airbyte for common ETLs + Dagster for custom sources</li>
+<li><strong>Storage</strong>: Google Cloud Storage for raw data, BigQuery as the central data warehouse</li>
+<li><strong>Transformation</strong>: dbt Core running on GitHub Actions CI/CD</li>
+<li><strong>Consumption</strong>: PowerBI and Google Sheets with extract mode from BigQuery</li>
+<li><strong>Cost</strong>: €100/month total (Airbyte VM ~€50 + BigQuery ~€50)</li>
+</ul>
+<h2 id="conclusion-architecture-for-growth">Conclusion: Architecture for Growth<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#conclusion-architecture-for-growth" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Building a modern data stack isn’t about using the trendiest tools, it’s about choosing the right ecosystem for your team’s skills, your business needs and your constraints.</p>
+<p><strong>The final architecture:</strong></p>
+<ul>
+<li><strong>Cost</strong>: €100/month (1% of budget)</li>
+<li><strong>Maintenance</strong>: ~4 hours/week after initial setup</li>
+<li><strong>Team productivity</strong>: 10x improvement in pipeline development speed</li>
+<li><strong>Data quality</strong>: Zero production incidents after month 2</li>
+<li><strong>Scalability</strong>: Architecture ready for 100x data volume growth</li>
+</ul>
+<p><strong>Key Takeaways:</strong></p>
+<ol>
+<li>Don’t default to the “corporate standard” cloud without proper analysis</li>
+<li>Self-hosted tools can provide 90% of managed features at 1% of the cost (the hidden tax is the time spent to deploy and maintain self-hosted tools)</li>
+<li>Infrastructure as Code is non-negotiable for modern data engineering</li>
+<li>Choose tools that match your team’s skill level (dbt for SQL-first teams)</li>
+<li>A one-week PoC beats months of theoretical planning</li>
+</ol>
+<p>The modern data stack doesn’t have to be expensive or complex. With the right architectural choices and a focus on fundamentals, a single data engineer can build production-grade infrastructure in weeks, not months.</p></article><hr/><div class="page-footer"><div class="newsletter-popup" id="newsletter-popup"><div class="popup-content"><button class="close-button" id="popup-close">×</button><h3>📬 Join the Newsletter</h3><p>Get bi-weekly insights &amp; tips delivered straight to your inbox.</p><button class="subscribe-button-popup" id="popup-subscribe-btn">Subscribe Now →</button></div></div><div class="newsletter-container" id="newsletter-banner"><iframe src="https://embeds.beehiiv.com/31677076-bfa0-485d-80e7-72c5f7d11891" data-test-id="beehiiv-embed" width="100%" height="320" frameborder="0" scrolling="no" style="border-radius:4px;border:2px solid #e5e7eb;margin:0px;background-color:transparent;"></iframe></div><div id="page-reactions-container" class="page-reactions-container"><h4>React to this article!</h4><div class="reaction-buttons-wrapper"></div></div></div></div><div class="right sidebar"><div class="toc desktop-only"><button type="button" class="toc-header" aria-controls="toc-content" aria-expanded="true"><h3>Table of Contents</h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><ul class="toc-content overflow" id="list-1"><li class="depth-0"><a href="#introduction-when-powerbi-becomes-the-bottleneck" data-for="introduction-when-powerbi-becomes-the-bottleneck">Introduction: When PowerBI Becomes the Bottleneck</a></li><li class="depth-0"><a href="#the-cloud-platform-battle-why-gcp-over-azure" data-for="the-cloud-platform-battle-why-gcp-over-azure">The Cloud Platform Battle: Why GCP Over Azure?</a></li><li class="depth-1"><a href="#the-azure-friction-points" data-for="the-azure-friction-points">The Azure friction points:</a></li><li class="depth-1"><a href="#the-poc-on-gcp" data-for="the-poc-on-gcp">The PoC on GCP</a></li><li class="depth-0"><a href="#infrastructure-as-code-first-the-terraform-foundation" data-for="infrastructure-as-code-first-the-terraform-foundation">Infrastructure as Code First: The Terraform Foundation</a></li><li class="depth-1"><a href="#architecture-principles" data-for="architecture-principles">Architecture Principles</a></li><li class="depth-0"><a href="#data-ingestion-the-self-hosted-airbyte-strategy" data-for="data-ingestion-the-self-hosted-airbyte-strategy">Data Ingestion: The Self-Hosted Airbyte Strategy</a></li><li class="depth-1"><a href="#the-cost-equation" data-for="the-cost-equation">The Cost Equation</a></li><li class="depth-1"><a href="#operational-best-practices" data-for="operational-best-practices">Operational Best Practices</a></li><li class="depth-0"><a href="#custom-orchestration-dagster-for-the-gaps" data-for="custom-orchestration-dagster-for-the-gaps">Custom Orchestration: Dagster for the Gaps</a></li><li class="depth-1"><a href="#why-dagster-over-airflow" data-for="why-dagster-over-airflow">Why Dagster Over Airflow?</a></li><li class="depth-1"><a href="#cost-optimization-pattern" data-for="cost-optimization-pattern">Cost Optimization Pattern</a></li><li class="depth-0"><a href="#transformation-layer-dbt-core--cicd" data-for="transformation-layer-dbt-core--cicd">Transformation Layer: dbt Core + CI/CD</a></li><li class="depth-1"><a href="#why-dbt-for-junior-analysts" data-for="why-dbt-for-junior-analysts">Why dbt for Junior Analysts?</a></li><li class="depth-1"><a href="#the-deployment-pipeline" data-for="the-deployment-pipeline">The Deployment Pipeline</a></li><li class="depth-0"><a href="#living-documentation-dbt-docs-on-cloud-run" data-for="living-documentation-dbt-docs-on-cloud-run">Living Documentation: dbt Docs on Cloud Run</a></li><li class="depth-0"><a href="#change-management-training-the-team" data-for="change-management-training-the-team">Change Management: Training the Team</a></li><li class="depth-1"><a href="#training-approach" data-for="training-approach">Training Approach</a></li><li class="depth-0"><a href="#lessons-learned--best-practices" data-for="lessons-learned--best-practices">Lessons Learned &amp; Best Practices</a></li><li class="depth-1"><a href="#what-id-do-again" data-for="what-id-do-again">What I’d Do Again</a></li><li class="depth-1"><a href="#what-id-do-differently" data-for="what-id-do-differently">What I’d Do Differently</a></li><li class="depth-1"><a href="#deployment-timeline-reality" data-for="deployment-timeline-reality">Deployment Timeline Reality</a></li><li class="depth-0"><a href="#architecture-overview" data-for="architecture-overview">Architecture Overview</a></li><li class="depth-0"><a href="#conclusion-architecture-for-growth" data-for="conclusion-architecture-for-growth">Conclusion: Architecture for Growth</a></li><li class="overflow-end"></li></ul></div></div><footer class=" footer-container"><div class="footer-left"><p>Created with ❤️ by <a href="https://pierre-munhoz-portfolio.vercel.app/" target="_blank">Pierre Munhoz</a> © 2026</p></div><div class="footer-right"><ul><li><a href="https://grumpystack.beehiiv.com/subscribe" target="_blank">Newsletter</a></li><li><a href="https://github.com/p-munhoz/" target="_blank">GitHub</a></li><li><a href="https://www.linkedin.com/in/pierre-munhoz/" target="_blank">LinkedIn</a></li><li><a href="/legal" target="_blank">Legal Notice</a></li><li><a href="/privacy-policy" target="_blank">Privacy Policy</a></li></ul></div></footer></div></div></body><script type="application/javascript">function n(){let t=this.parentElement;t.classList.toggle("is-collapsed");let e=t.getElementsByClassName("callout-content")[0];if(!e)return;let l=t.classList.contains("is-collapsed");e.style.gridTemplateRows=l?"0fr":"1fr"}function c(){let t=document.getElementsByClassName("callout is-collapsible");for(let e of t){let l=e.getElementsByClassName("callout-title")[0],s=e.getElementsByClassName("callout-content")[0];if(!l||!s)continue;l.addEventListener("click",n),window.addCleanup(()=>l.removeEventListener("click",n));let o=e.classList.contains("is-collapsed");s.style.gridTemplateRows=o?"0fr":"1fr"}}document.addEventListener("nav",c);
+</script><script type="module">function f(i,e){if(!i)return;function r(o){o.target===this&&(o.preventDefault(),o.stopPropagation(),e())}function t(o){o.key.startsWith("Esc")&&(o.preventDefault(),e())}i?.addEventListener("click",r),window.addCleanup(()=>i?.removeEventListener("click",r)),document.addEventListener("keydown",t),window.addCleanup(()=>document.removeEventListener("keydown",t))}function y(i){for(;i.firstChild;)i.removeChild(i.firstChild)}var h=class{constructor(e,r){this.container=e;this.content=r;this.setupEventListeners(),this.setupNavigationControls(),this.resetTransform()}isDragging=!1;startPan={x:0,y:0};currentPan={x:0,y:0};scale=1;MIN_SCALE=.5;MAX_SCALE=3;cleanups=[];setupEventListeners(){let e=this.onMouseDown.bind(this),r=this.onMouseMove.bind(this),t=this.onMouseUp.bind(this),o=this.resetTransform.bind(this);this.container.addEventListener("mousedown",e),document.addEventListener("mousemove",r),document.addEventListener("mouseup",t),window.addEventListener("resize",o),this.cleanups.push(()=>this.container.removeEventListener("mousedown",e),()=>document.removeEventListener("mousemove",r),()=>document.removeEventListener("mouseup",t),()=>window.removeEventListener("resize",o))}cleanup(){for(let e of this.cleanups)e()}setupNavigationControls(){let e=document.createElement("div");e.className="mermaid-controls";let r=this.createButton("+",()=>this.zoom(.1)),t=this.createButton("-",()=>this.zoom(-.1)),o=this.createButton("Reset",()=>this.resetTransform());e.appendChild(t),e.appendChild(o),e.appendChild(r),this.container.appendChild(e)}createButton(e,r){let t=document.createElement("button");return t.textContent=e,t.className="mermaid-control-button",t.addEventListener("click",r),window.addCleanup(()=>t.removeEventListener("click",r)),t}onMouseDown(e){e.button===0&&(this.isDragging=!0,this.startPan={x:e.clientX-this.currentPan.x,y:e.clientY-this.currentPan.y},this.container.style.cursor="grabbing")}onMouseMove(e){this.isDragging&&(e.preventDefault(),this.currentPan={x:e.clientX-this.startPan.x,y:e.clientY-this.startPan.y},this.updateTransform())}onMouseUp(){this.isDragging=!1,this.container.style.cursor="grab"}zoom(e){let r=Math.min(Math.max(this.scale+e,this.MIN_SCALE),this.MAX_SCALE),t=this.content.getBoundingClientRect(),o=t.width/2,n=t.height/2,c=r-this.scale;this.currentPan.x-=o*c,this.currentPan.y-=n*c,this.scale=r,this.updateTransform()}updateTransform(){this.content.style.transform=`translate(${this.currentPan.x}px, ${this.currentPan.y}px) scale(${this.scale})`}resetTransform(){this.scale=1;let e=this.content.querySelector("svg");this.currentPan={x:e.getBoundingClientRect().width/2,y:e.getBoundingClientRect().height/2},this.updateTransform()}},C=["--secondary","--tertiary","--gray","--light","--lightgray","--highlight","--dark","--darkgray","--codeFont"],E;document.addEventListener("nav",async()=>{let e=document.querySelector(".center").querySelectorAll("code.mermaid");if(e.length===0)return;E||=await import("https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.esm.min.mjs");let r=E.default,t=new WeakMap;for(let n of e)t.set(n,n.innerText);async function o(){for(let s of e){s.removeAttribute("data-processed");let a=t.get(s);a&&(s.innerHTML=a)}let n=C.reduce((s,a)=>(s[a]=window.getComputedStyle(document.documentElement).getPropertyValue(a),s),{}),c=document.documentElement.getAttribute("saved-theme")==="dark";r.initialize({startOnLoad:!1,securityLevel:"loose",theme:c?"dark":"base",themeVariables:{fontFamily:n["--codeFont"],primaryColor:n["--light"],primaryTextColor:n["--darkgray"],primaryBorderColor:n["--tertiary"],lineColor:n["--darkgray"],secondaryColor:n["--secondary"],tertiaryColor:n["--tertiary"],clusterBkg:n["--light"],edgeLabelBackground:n["--highlight"]}}),await r.run({nodes:e})}await o(),document.addEventListener("themechange",o),window.addCleanup(()=>document.removeEventListener("themechange",o));for(let n=0;n<e.length;n++){let v=function(){let g=l.querySelector("#mermaid-space"),m=l.querySelector(".mermaid-content");if(!m)return;y(m);let w=c.querySelector("svg").cloneNode(!0);m.appendChild(w),l.classList.add("active"),g.style.cursor="grab",u=new h(g,m)},M=function(){l.classList.remove("active"),u?.cleanup(),u=null},c=e[n],s=c.parentElement,a=s.querySelector(".clipboard-button"),d=s.querySelector(".expand-button"),p=window.getComputedStyle(a),L=a.offsetWidth+parseFloat(p.marginLeft||"0")+parseFloat(p.marginRight||"0");d.style.right=`calc(${L}px + 0.3rem)`,s.prepend(d);let l=s.querySelector("#mermaid-container");if(!l)return;let u=null;d.addEventListener("click",v),f(l,M),window.addCleanup(()=>{u?.cleanup(),d.removeEventListener("click",v)})}});
+</script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/copy-tex.min.js" type="application/javascript"></script><script src="../postscript.js" type="module"></script></html>
