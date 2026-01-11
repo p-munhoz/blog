@@ -10,25 +10,31 @@
     <link>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</link>
     <guid>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</guid>
     <description>Learn how to solve the Majority Element problem from LeetCode using Python and the Boyer-Moore Voting Algorithm. Ideal for coding interviews.</description>
-    <pubDate>Sun, 04 Jan 2026 14:10:00 GMT</pubDate>
+    <pubDate>Sun, 11 Jan 2026 17:01:29 GMT</pubDate>
   </item><item>
     <title>Pierre Munhoz — Data Engineering, Analytics &amp; More</title>
     <link>https://blog.pmunhoz.com/</link>
     <guid>https://blog.pmunhoz.com/</guid>
     <description>Discover the engineering blog of Pierre Munhoz, a freelance Data Engineer. Explore insights on data engineering, analytics, and coding.</description>
-    <pubDate>Sun, 04 Jan 2026 14:10:00 GMT</pubDate>
+    <pubDate>Sun, 11 Jan 2026 17:01:29 GMT</pubDate>
   </item><item>
     <title>How to backup Airbyte on Google Cloud Storage?</title>
     <link>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</link>
     <guid>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</guid>
     <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte.</description>
-    <pubDate>Sun, 04 Jan 2026 14:10:00 GMT</pubDate>
+    <pubDate>Sun, 11 Jan 2026 17:01:29 GMT</pubDate>
   </item><item>
     <title>What is Boyer-Moore majority vote algorithm?</title>
     <link>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</link>
     <guid>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</guid>
     <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using O(1) space and O(n) time.</description>
-    <pubDate>Sun, 04 Jan 2026 14:10:00 GMT</pubDate>
+    <pubDate>Sun, 11 Jan 2026 17:01:29 GMT</pubDate>
+  </item><item>
+    <title>Data File Formats for Data Engineering: CSV, JSON, Parquet, Avro, and More</title>
+    <link>https://blog.pmunhoz.com/data-engineering/file-formats-csv-parquet-avro</link>
+    <guid>https://blog.pmunhoz.com/data-engineering/file-formats-csv-parquet-avro</guid>
+    <description>A practical data engineering guide to choosing file formats for ingestion, storage, and analytics, with trade-offs and real-world examples.</description>
+    <pubDate>Sun, 11 Jan 2026 00:00:00 GMT</pubDate>
   </item><item>
     <title>Building a €100/month Modern Data Stack with GCP, dbt &amp; Dagster</title>
     <link>https://blog.pmunhoz.com/gcp/bi-datawarehouse-from-scratch-gcp</link>
@@ -59,12 +65,6 @@
     <guid>https://blog.pmunhoz.com/docker/docker-third-party-images</guid>
     <description>Master the art of using pre-built Docker images effectively. Learn to run databases, create development environments, and use command-line utilities without building everything from scratch. Stop reinventing wheels and start shipping software.</description>
     <pubDate>Fri, 13 Jun 2025 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>Docker Data Persistence Explained (and How to Stop Losing Your Data)</title>
-    <link>https://blog.pmunhoz.com/docker/docker-data-persistence-volumes</link>
-    <guid>https://blog.pmunhoz.com/docker/docker-data-persistence-volumes</guid>
-    <description>Master Docker data persistence. This comprehensive guide covers volumes, bind mounts, tmpfs, and practical Docker storage patterns to prevent data loss and manage persistent data effectively, even when rebuilding or scaling containers.</description>
-    <pubDate>Wed, 11 Jun 2025 00:00:00 GMT</pubDate>
   </item>
     </channel>
   </rss>
