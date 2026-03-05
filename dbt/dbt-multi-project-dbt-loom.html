@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en"><head><title>dbt Multi-Project Without dbt Cloud: A Practical Guide to dbt-loom</title><meta charset="utf-8"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted Grotesk:wght@400;700&amp;family=Source Sans Pro:ital,wght@0,400;0,600;1,400;1,600&amp;family=IBM Plex Mono:wght@400;600&amp;display=swap"/><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin="anonymous"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link rel="canonical" href="https://blog.pmunhoz.com/dbt/dbt-multi-project-dbt-loom"/><meta name="og:site_name" content="❄️ Pierre Munhoz engineering blog"/><meta property="og:title" content="dbt Multi-Project Without dbt Cloud: A Practical Guide to dbt-loom"/><meta property="og:type" content="website"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="dbt Multi-Project Without dbt Cloud: A Practical Guide to dbt-loom"/><meta name="twitter:description" content="Learn how to split a monolithic dbt project into domain-oriented projects and wire them together with dbt-loom, the open-source plugin that brings dbt Mesh-style cross-project refs to dbt Core — no dbt Cloud required. Includes a working demo with DuckDB, fan-out dependencies, CI deployment order, and a workaround for the docs lineage limitation."/><meta property="og:description" content="Learn how to split a monolithic dbt project into domain-oriented projects and wire them together with dbt-loom, the open-source plugin that brings dbt Mesh-style cross-project refs to dbt Core — no dbt Cloud required. Includes a working demo with DuckDB, fan-out dependencies, CI deployment order, and a workaround for the docs lineage limitation."/><meta property="og:image:alt" content="Learn how to split a monolithic dbt project into domain-oriented projects and wire them together with dbt-loom, the open-source plugin that brings dbt Mesh-style cross-project refs to dbt Core — no dbt Cloud required. Includes a working demo with DuckDB, fan-out dependencies, CI deployment order, and a workaround for the docs lineage limitation."/><meta property="twitter:domain" content="blog.pmunhoz.com"/><meta property="og:url" content="https://blog.pmunhoz.com/dbt/dbt-multi-project-dbt-loom"/><meta property="twitter:url" content="https://blog.pmunhoz.com/dbt/dbt-multi-project-dbt-loom"/><link rel="icon" href="../static/icon.png"/><meta name="description" content="Learn how to split a monolithic dbt project into domain-oriented projects and wire them together with dbt-loom, the open-source plugin that brings dbt Mesh-style cross-project refs to dbt Core — no dbt Cloud required. Includes a working demo with DuckDB, fan-out dependencies, CI deployment order, and a workaround for the docs lineage limitation."/><meta name="generator" content="Quartz"/><meta name="google-site-verification" content="Uk-Wy3I4Mu2CyP3YBgy_L-a6iyyu_sRBz4GZVsJQyu0"/><meta name="google-site-verification" content="W86SYK7DAZVSK9aULSjhmzXTmWNGqNLKHpGms2aplsM"/><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"dbt Multi-Project Without dbt Cloud: A Practical Guide to dbt-loom","author":{"@type":"Person","name":"Pierre Munhoz"},"datePublished":"2026-03-05T00:00:00.000Z","url":"https://blog.pmunhoz.com/dbt/dbt-multi-project-dbt-loom","publisher":{"@type":"Organization","name":"Pierre Munhoz Engineering Blog"},"description":"Learn how to split a monolithic dbt project into domain-oriented projects and wire them together with dbt-loom, the open-source plugin that brings dbt Mesh-style cross-project refs to dbt Core — no dbt Cloud required. Includes a working demo with DuckDB, fan-out dependencies, CI deployment order, and a workaround for the docs lineage limitation."}</script><link href="../index.css" rel="stylesheet" type="text/css" spa-preserve/><style>.expand-button {
+  position: absolute;
+  display: flex;
+  float: right;
+  padding: 0.4rem;
+  margin: 0.3rem;
+  right: 0;
+  color: var(--gray);
+  border-color: var(--dark);
+  background-color: var(--light);
+  border: 1px solid;
+  border-radius: 5px;
+  opacity: 0;
+  transition: 0.2s;
+}
+.expand-button > svg {
+  fill: var(--light);
+  filter: contrast(0.3);
+}
+.expand-button:hover {
+  cursor: pointer;
+  border-color: var(--secondary);
+}
+.expand-button:focus {
+  outline: 0;
+}
+
+pre:hover > .expand-button {
+  opacity: 1;
+  transition: 0.2s;
+}
+
+#mermaid-container {
+  position: fixed;
+  contain: layout;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: none;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+}
+#mermaid-container.active {
+  display: inline-block;
+}
+#mermaid-container > #mermaid-space {
+  border: 1px solid var(--lightgray);
+  background-color: var(--light);
+  border-radius: 5px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 80vh;
+  width: 80vw;
+  overflow: hidden;
+}
+#mermaid-container > #mermaid-space > .mermaid-content {
+  padding: 2rem;
+  position: relative;
+  transform-origin: 0 0;
+  transition: transform 0.1s ease;
+  overflow: visible;
+  min-height: 200px;
+  min-width: 200px;
+}
+#mermaid-container > #mermaid-space > .mermaid-content pre {
+  margin: 0;
+  border: none;
+}
+#mermaid-container > #mermaid-space > .mermaid-content svg {
+  max-width: none;
+  height: auto;
+}
+#mermaid-container > #mermaid-space > .mermaid-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: var(--light);
+  border: 1px solid var(--lightgray);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--lightgray);
+  background: var(--light);
+  color: var(--dark);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: var(--bodyFont);
+  transition: all 0.2s ease;
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button:hover {
+  background: var(--lightgray);
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button:active {
+  transform: translateY(1px);
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button:nth-child(2) {
+  width: auto;
+  padding: 0 12px;
+  font-size: 14px;
+}
+/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiL2hvbWUvcnVubmVyL3dvcmsvcXVhcnR6L3F1YXJ0ei9wcml2YXRlLXJlcG8vcXVhcnR6L2NvbXBvbmVudHMvc3R5bGVzIiwic291cmNlcyI6WyJtZXJtYWlkLmlubGluZS5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7O0FBRUE7RUFDRTtFQUNBOztBQUdGO0VBQ0U7RUFDQTs7QUFHRjtFQUNFOzs7QUFLRjtFQUNFO0VBQ0E7OztBQUlKO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTs7QUFFQTtFQUNFOztBQUdGO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7O0FBRUE7RUFDRTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTs7QUFFQTtFQUNFO0VBQ0E7O0FBR0Y7RUFDRTtFQUNBOztBQUlKO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTs7QUFFQTtFQUNFO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7O0FBRUE7RUFDRTs7QUFHRjtFQUNFOztBQUlGO0VBQ0U7RUFDQTtFQUNBIiwic291cmNlc0NvbnRlbnQiOlsiLmV4cGFuZC1idXR0b24ge1xuICBwb3NpdGlvbjogYWJzb2x1dGU7XG4gIGRpc3BsYXk6IGZsZXg7XG4gIGZsb2F0OiByaWdodDtcbiAgcGFkZGluZzogMC40cmVtO1xuICBtYXJnaW46IDAuM3JlbTtcbiAgcmlnaHQ6IDA7IC8vIE5PVEU6IHJpZ2h0IHdpbGwgYmUgc2V0IGluIG1lcm1haWQuaW5saW5lLnRzXG4gIGNvbG9yOiB2YXIoLS1ncmF5KTtcbiAgYm9yZGVyLWNvbG9yOiB2YXIoLS1kYXJrKTtcbiAgYmFja2dyb3VuZC1jb2xvcjogdmFyKC0tbGlnaHQpO1xuICBib3JkZXI6IDFweCBzb2xpZDtcbiAgYm9yZGVyLXJhZGl1czogNXB4O1xuICBvcGFjaXR5OiAwO1xuICB0cmFuc2l0aW9uOiAwLjJzO1xuXG4gICYgPiBzdmcge1xuICAgIGZpbGw6IHZhcigtLWxpZ2h0KTtcbiAgICBmaWx0ZXI6IGNvbnRyYXN0KDAuMyk7XG4gIH1cblxuICAmOmhvdmVyIHtcbiAgICBjdXJzb3I6IHBvaW50ZXI7XG4gICAgYm9yZGVyLWNvbG9yOiB2YXIoLS1zZWNvbmRhcnkpO1xuICB9XG5cbiAgJjpmb2N1cyB7XG4gICAgb3V0bGluZTogMDtcbiAgfVxufVxuXG5wcmUge1xuICAmOmhvdmVyID4gLmV4cGFuZC1idXR0b24ge1xuICAgIG9wYWNpdHk6IDE7XG4gICAgdHJhbnNpdGlvbjogMC4ycztcbiAgfVxufVxuXG4jbWVybWFpZC1jb250YWluZXIge1xuICBwb3NpdGlvbjogZml4ZWQ7XG4gIGNvbnRhaW46IGxheW91dDtcbiAgei1pbmRleDogOTk5O1xuICBsZWZ0OiAwO1xuICB0b3A6IDA7XG4gIHdpZHRoOiAxMDB2dztcbiAgaGVpZ2h0OiAxMDB2aDtcbiAgb3ZlcmZsb3c6IGhpZGRlbjtcbiAgZGlzcGxheTogbm9uZTtcbiAgYmFja2Ryb3AtZmlsdGVyOiBibHVyKDRweCk7XG4gIGJhY2tncm91bmQ6IHJnYmEoMCwgMCwgMCwgMC41KTtcblxuICAmLmFjdGl2ZSB7XG4gICAgZGlzcGxheTogaW5saW5lLWJsb2NrO1xuICB9XG5cbiAgJiA+ICNtZXJtYWlkLXNwYWNlIHtcbiAgICBib3JkZXI6IDFweCBzb2xpZCB2YXIoLS1saWdodGdyYXkpO1xuICAgIGJhY2tncm91bmQtY29sb3I6IHZhcigtLWxpZ2h0KTtcbiAgICBib3JkZXItcmFkaXVzOiA1cHg7XG4gICAgcG9zaXRpb246IGZpeGVkO1xuICAgIHRvcDogNTAlO1xuICAgIGxlZnQ6IDUwJTtcbiAgICB0cmFuc2Zvcm06IHRyYW5zbGF0ZSgtNTAlLCAtNTAlKTtcbiAgICBoZWlnaHQ6IDgwdmg7XG4gICAgd2lkdGg6IDgwdnc7XG4gICAgb3ZlcmZsb3c6IGhpZGRlbjtcblxuICAgICYgPiAubWVybWFpZC1jb250ZW50IHtcbiAgICAgIHBhZGRpbmc6IDJyZW07XG4gICAgICBwb3NpdGlvbjogcmVsYXRpdmU7XG4gICAgICB0cmFuc2Zvcm0tb3JpZ2luOiAwIDA7XG4gICAgICB0cmFuc2l0aW9uOiB0cmFuc2Zvcm0gMC4xcyBlYXNlO1xuICAgICAgb3ZlcmZsb3c6IHZpc2libGU7XG4gICAgICBtaW4taGVpZ2h0OiAyMDBweDtcbiAgICAgIG1pbi13aWR0aDogMjAwcHg7XG5cbiAgICAgIHByZSB7XG4gICAgICAgIG1hcmdpbjogMDtcbiAgICAgICAgYm9yZGVyOiBub25lO1xuICAgICAgfVxuXG4gICAgICBzdmcge1xuICAgICAgICBtYXgtd2lkdGg6IG5vbmU7XG4gICAgICAgIGhlaWdodDogYXV0bztcbiAgICAgIH1cbiAgICB9XG5cbiAgICAmID4gLm1lcm1haWQtY29udHJvbHMge1xuICAgICAgcG9zaXRpb246IGFic29sdXRlO1xuICAgICAgYm90dG9tOiAyMHB4O1xuICAgICAgcmlnaHQ6IDIwcHg7XG4gICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgZ2FwOiA4cHg7XG4gICAgICBwYWRkaW5nOiA4cHg7XG4gICAgICBiYWNrZ3JvdW5kOiB2YXIoLS1saWdodCk7XG4gICAgICBib3JkZXI6IDFweCBzb2xpZCB2YXIoLS1saWdodGdyYXkpO1xuICAgICAgYm9yZGVyLXJhZGl1czogNnB4O1xuICAgICAgYm94LXNoYWRvdzogMCAycHggNHB4IHJnYmEoMCwgMCwgMCwgMC4xKTtcbiAgICAgIHotaW5kZXg6IDI7XG5cbiAgICAgIC5tZXJtYWlkLWNvbnRyb2wtYnV0dG9uIHtcbiAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAgICAgICAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7XG4gICAgICAgIHdpZHRoOiAzMnB4O1xuICAgICAgICBoZWlnaHQ6IDMycHg7XG4gICAgICAgIHBhZGRpbmc6IDA7XG4gICAgICAgIGJvcmRlcjogMXB4IHNvbGlkIHZhcigtLWxpZ2h0Z3JheSk7XG4gICAgICAgIGJhY2tncm91bmQ6IHZhcigtLWxpZ2h0KTtcbiAgICAgICAgY29sb3I6IHZhcigtLWRhcmspO1xuICAgICAgICBib3JkZXItcmFkaXVzOiA0cHg7XG4gICAgICAgIGN1cnNvcjogcG9pbnRlcjtcbiAgICAgICAgZm9udC1zaXplOiAxNnB4O1xuICAgICAgICBmb250LWZhbWlseTogdmFyKC0tYm9keUZvbnQpO1xuICAgICAgICB0cmFuc2l0aW9uOiBhbGwgMC4ycyBlYXNlO1xuXG4gICAgICAgICY6aG92ZXIge1xuICAgICAgICAgIGJhY2tncm91bmQ6IHZhcigtLWxpZ2h0Z3JheSk7XG4gICAgICAgIH1cblxuICAgICAgICAmOmFjdGl2ZSB7XG4gICAgICAgICAgdHJhbnNmb3JtOiB0cmFuc2xhdGVZKDFweCk7XG4gICAgICAgIH1cblxuICAgICAgICAvLyBTdHlsZSB0aGUgcmVzZXQgYnV0dG9uIGRpZmZlcmVudGx5XG4gICAgICAgICY6bnRoLWNoaWxkKDIpIHtcbiAgICAgICAgICB3aWR0aDogYXV0bztcbiAgICAgICAgICBwYWRkaW5nOiAwIDEycHg7XG4gICAgICAgICAgZm9udC1zaXplOiAxNHB4O1xuICAgICAgICB9XG4gICAgICB9XG4gICAgfVxuICB9XG59XG4iXX0= */</style><link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet" type="text/css" spa-preserve/><script src="../prescript.js" type="application/javascript" spa-preserve></script><script type="application/javascript" spa-preserve>const fetchData = fetch("../static/contentIndex.json").then(data => data.json())</script><link rel="alternate" type="application/rss+xml" title="RSS Feed" href="https://blog.pmunhoz.com/index.xml"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image" content="https://blog.pmunhoz.com/dbt/dbt-multi-project-dbt-loom-og-image.webp"/><meta property="og:image:url" content="https://blog.pmunhoz.com/dbt/dbt-multi-project-dbt-loom-og-image.webp"/><meta name="twitter:image" content="https://blog.pmunhoz.com/dbt/dbt-multi-project-dbt-loom-og-image.webp"/><meta property="og:image:type" content="image/.webp"/></head><body data-slug="dbt/dbt-multi-project-dbt-loom"><div id="quartz-root" class="page"><div id="quartz-body"><div class="left sidebar"><h2 class="page-title"><a href=".." class="page-title-link">❄️ Pierre Munhoz engineering blog</a></h2><div class="spacer mobile-only"></div><div style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 1rem;"><div style="flex-grow: 1; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><div class="search"><button class="search-button"><p>Search</p><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title>Search</title><g class="search-path" fill="none"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"></path><circle cx="8" cy="8" r="7"></circle></g></svg></button><div class="search-container"><div class="search-space"><input autocomplete="off" class="search-bar" name="search" type="text" aria-label="Search for something" placeholder="Search for something"/><div class="search-layout" data-preview="true"></div></div></div></div></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="darkmode"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="dayIcon" x="0px" y="0px" viewBox="0 0 35 35" style="enable-background:new 0 0 35 35" xml:space="preserve" aria-label="Dark mode"><title>Dark mode</title><path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="nightIcon" x="0px" y="0px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100" xml:space="preserve" aria-label="Light mode"><title>Light mode</title><path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571  C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23  c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369  c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65  c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"></path></svg></button></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="readermode"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="readerIcon" fill="currentColor" stroke="currentColor" stroke-width="0.2" stroke-linecap="round" stroke-linejoin="round" width="64px" height="64px" viewBox="0 0 24 24" aria-label="Reader mode"><title>Reader mode</title><g transform="translate(-1.8, -1.8) scale(1.15, 1.2)"><path d="M8.9891247,2.5 C10.1384702,2.5 11.2209868,2.96705384 12.0049645,3.76669482 C12.7883914,2.96705384 13.8709081,2.5 15.0202536,2.5 L18.7549359,2.5 C19.1691495,2.5 19.5049359,2.83578644 19.5049359,3.25 L19.5046891,4.004 L21.2546891,4.00457396 C21.6343849,4.00457396 21.9481801,4.28672784 21.9978425,4.6528034 L22.0046891,4.75457396 L22.0046891,20.25 C22.0046891,20.6296958 21.7225353,20.943491 21.3564597,20.9931534 L21.2546891,21 L2.75468914,21 C2.37499337,21 2.06119817,20.7178461 2.01153575,20.3517706 L2.00468914,20.25 L2.00468914,4.75457396 C2.00468914,4.37487819 2.28684302,4.061083 2.65291858,4.01142057 L2.75468914,4.00457396 L4.50368914,4.004 L4.50444233,3.25 C4.50444233,2.87030423 4.78659621,2.55650904 5.15267177,2.50684662 L5.25444233,2.5 L8.9891247,2.5 Z M4.50368914,5.504 L3.50468914,5.504 L3.50468914,19.5 L10.9478955,19.4998273 C10.4513189,18.9207296 9.73864328,18.5588115 8.96709342,18.5065584 L8.77307039,18.5 L5.25444233,18.5 C4.87474657,18.5 4.56095137,18.2178461 4.51128895,17.8517706 L4.50444233,17.75 L4.50368914,5.504 Z M19.5049359,17.75 C19.5049359,18.1642136 19.1691495,18.5 18.7549359,18.5 L15.2363079,18.5 C14.3910149,18.5 13.5994408,18.8724714 13.0614828,19.4998273 L20.5046891,19.5 L20.5046891,5.504 L19.5046891,5.504 L19.5049359,17.75 Z M18.0059359,3.999 L15.0202536,4 L14.8259077,4.00692283 C13.9889509,4.06666544 13.2254227,4.50975805 12.7549359,5.212 L12.7549359,17.777 L12.7782651,17.7601316 C13.4923805,17.2719483 14.3447024,17 15.2363079,17 L18.0059359,16.999 L18.0056891,4.798 L18.0033792,4.75457396 L18.0056891,4.71 L18.0059359,3.999 Z M8.9891247,4 L6.00368914,3.999 L6.00599909,4.75457396 L6.00599909,4.75457396 L6.00368914,4.783 L6.00368914,16.999 L8.77307039,17 C9.57551536,17 10.3461406,17.2202781 11.0128313,17.6202194 L11.2536891,17.776 L11.2536891,5.211 C10.8200889,4.56369974 10.1361548,4.13636104 9.37521067,4.02745763 L9.18347055,4.00692283 L8.9891247,4 Z"></path></g></svg></button></div></div><div id="newsletter-cta" class="undefined newsletter-cta"><strong>📬 Newsletter</strong>Get bi-weekly insights &amp; tips.<br/><button id="open-newsletter-modal" class="subscribe-button">Subscribe here →</button></div><div id="newsletter-modal" class="newsletter-modal"><div class="modal-content"><button class="close-button">×</button><h3>🚀 Elevate Your Data Engineering Skills</h3><p>Beyond the blog: Receive bi-weekly doses of actionable data engineering strategies, exclusive technical experiments, and reflections on boosting your creative productivity as a technical professional.</p><form class="newsletter-form"><input type="email" placeholder="Your best engineering email" required/><button type="submit">Subscribe</button><p><i>No spam, pure value.</i></p><button id="already-subscribed-btn" class="already-subscribed-button">I'm already subscribed</button></form></div></div><div class="explorer" data-behavior="link" data-collapsed="collapsed" data-savestate="true" data-data-fns="{&quot;order&quot;:[&quot;filter&quot;,&quot;map&quot;,&quot;sort&quot;],&quot;sortFn&quot;:&quot;(a,b)=>!a.isFolder&amp;&amp;!b.isFolder||a.isFolder&amp;&amp;b.isFolder?a.displayName.localeCompare(b.displayName,void 0,{numeric:!0,sensitivity:\&quot;base\&quot;}):!a.isFolder&amp;&amp;b.isFolder?1:-1&quot;,&quot;filterFn&quot;:&quot;node=>!node.displayName.toLowerCase().startsWith(\&quot;legal notice\&quot;)&amp;&amp;!node.displayName.toLowerCase().startsWith(\&quot;privacy policy\&quot;)&amp;&amp;node.slugSegment!==\&quot;tags\&quot;&quot;,&quot;mapFn&quot;:&quot;node=>node&quot;}"><button type="button" class="explorer-toggle mobile-explorer hide-until-loaded" data-mobile="true" aria-controls="explorer-content"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide-menu"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button><button type="button" class="title-button explorer-toggle desktop-explorer" data-mobile="false" aria-expanded="true"><h2>Explorer</h2><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div class="explorer-content" aria-expanded="false"><ul class="explorer-ul overflow" id="list-0"><li class="overflow-end"></li></ul></div><template id="template-file"><li><a href="#"></a></li></template><template id="template-folder"><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div><button class="folder-button"><span class="folder-title"></span></button></div></div><div class="folder-outer"><ul class="content"></ul></div></li></template></div></div><div class="center"><div class="page-header"><header><div class="mobile-header"><a href=".." class="mobile-title">❄️ Pierre Munhoz engineering blog</a></div></header><div class="popover-hint"><nav class="breadcrumb-container" aria-label="breadcrumbs"><div class="breadcrumb-element"><a href="../">Home</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../dbt/">dbt</a><p> ❯ </p></div><div class="breadcrumb-element"><a href>dbt Multi Project Without dbt Cloud: A Practical Guide to dbt loom</a></div></nav><h1 class="article-title">dbt Multi-Project Without dbt Cloud: A Practical Guide to dbt-loom</h1><p show-comma="true" class="content-meta"><time datetime="2026-03-05T00:00:00.000Z">Mar 05, 2026</time><span>15 min read</span></p><ul class="tags"><li><a href="../tags/dbt" class="internal tag-link">dbt</a></li><li><a href="../tags/dbt-loom" class="internal tag-link">dbt-loom</a></li><li><a href="../tags/data-mesh" class="internal tag-link">data-mesh</a></li><li><a href="../tags/data-engineering" class="internal tag-link">data-engineering</a></li><li><a href="../tags/data-modeling" class="internal tag-link">data-modeling</a></li><li><a href="../tags/dbt-core" class="internal tag-link">dbt-core</a></li><li><a href="../tags/monorepo" class="internal tag-link">monorepo</a></li></ul></div></div><article class="popover-hint"><p>As your dbt project grows, you’ll inevitably hit the wall: a monolithic project with hundreds of models, slow parse times, tangled CI pipelines, and multiple teams stepping on each other’s feet. The natural next question is: <strong>should you split this into multiple projects?</strong></p>
+<p>And if you do, how do you handle cross-project dependencies without paying for dbt Cloud?</p>
+<p>This article walks through the mono repo vs. multi repo decision, then dives into <strong>dbt-loom</strong>, the open-source plugin that brings dbt Mesh-style cross-project references to dbt Core users. Everything shown here is backed by a working demo repository using dbt Core, DuckDB, and <a href="https://docs.astral.sh/uv/" class="external" target="_blank">uv<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a> (no dbt Cloud account required).</p>
+<p>I’ve made a repository in order to illustrate what is described in the article, you can find it here: <a href="https://github.com/p-munhoz/dbt-loom-multi-project-demo" class="external" target="_blank">https://github.com/p-munhoz/dbt-loom-multi-project-demo<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></p>
+<hr/>
+<h2 id="the-problem-with-monolithic-dbt-projects">The Problem with Monolithic dbt Projects<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-problem-with-monolithic-dbt-projects" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>When a dbt project is small, everything in one repo is perfectly fine. A single <code>dbt run</code> rebuilds the world, lineage is complete, and every model is discoverable by the whole team.</p>
+<p>But as the project scales (more teams, more domains, more models) the monolith starts to crack:</p>
+<ul>
+<li><strong>Slow parse times.</strong> dbt parses every model on every run, even if you only touched two files.</li>
+<li><strong>Long CI builds.</strong> Every PR triggers a full pipeline. Slim CI helps, but the blast radius of any change is hard to control.</li>
+<li><strong>Ownership conflicts.</strong> The finance team shouldn’t need to negotiate with the marketing team to merge a model rename.</li>
+<li><strong>Cognitive overload.</strong> Finding the “right” model becomes harder when everything lives in one giant DAG.</li>
+</ul>
+<p>At some point, splitting into smaller, domain-oriented dbt projects becomes the natural solution. This is exactly what <strong>dbt Mesh</strong> promotes and what <strong>dbt-loom</strong> makes accessible without a dbt Cloud subscription.</p>
+<hr/>
+<h2 id="mono-repo-vs-multi-repo-what-are-we-actually-deciding">Mono Repo vs. Multi Repo: What Are We Actually Deciding?<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#mono-repo-vs-multi-repo-what-are-we-actually-deciding" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Before diving into tooling, it’s worth being precise about what this choice entails.</p>
+<p><strong>A mono repo</strong> contains multiple dbt projects in a single Git repository. Teams work in subdirectories. This keeps tooling simple (one CI/CD pipeline, shared linting configs) while enabling project isolation. This is the layout of the demo in this article: <code>core_project</code>, <code>finance_project</code>, and <code>marketing_project</code> all live under a shared <code>projects/</code> directory.</p>
+<p><strong>A multi repo</strong> gives each dbt project its own Git repository. Teams are fully autonomous, they have their own CI, their own deployment schedules, their own dependency graph. This is the microservices model applied to data.</p>
+<p>The key point: <strong>dbt-loom works for both</strong>. The mechanism is the same whether the upstream manifest lives at a relative path next door or in an S3 bucket from a completely separate repo. The only thing that changes is where you point the config.</p>
+<p>Here’s a practical comparison to guide the decision:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th></th><th>Mono Repo</th><th>Multi Repo</th></tr></thead><tbody><tr><td>Coordination overhead</td><td>Low</td><td>Higher</td></tr><tr><td>Team autonomy</td><td>Medium</td><td>High</td></tr><tr><td>CI/CD complexity</td><td>Simpler</td><td>More pipelines to manage</td></tr><tr><td>Cross-project refs</td><td>Easier (same repo)</td><td>Requires manifest publishing</td></tr><tr><td>Access control (Git)</td><td>Harder to isolate</td><td>Native per-repo</td></tr><tr><td>Onboarding new teams</td><td>Easy</td><td>More setup</td></tr></tbody></table></div>
+<p>Neither is universally better. Your choice should map to your <strong>org structure</strong>, not the other way around.</p>
+<hr/>
+<h2 id="what-is-dbt-mesh-and-why-its-gated">What Is dbt Mesh and Why It’s Gated<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#what-is-dbt-mesh-and-why-its-gated" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>dbt Labs introduced <strong>dbt Mesh</strong> as their native answer to multi-project collaboration. The core idea: each dbt project exposes a set of <strong>public models</strong> that downstream projects can reference with a scoped <code>ref()</code> call. The metadata plumbing between projects is handled by dbt Cloud’s metadata service.</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># dependencies.yml - dbt Cloud only</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">projects</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project</span></span></code></pre></figure>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="sql" data-theme="github-light github-dark"><code data-language="sql" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">-- downstream model referencing an upstream public model</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">select</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> *</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {{ ref(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'core_project'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'dim_customers'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span></code></pre></figure>
+<p>This is elegant. But it requires dbt Cloud and enterprise pricing that puts it out of reach for many teams. As Nicholas Yager, the author of dbt-loom, stated in the dbt-core GitHub discussions when Labs announced cross-project refs would not be open-sourced: <em>“As a disappointed community member, I have created dbt-loom, an Apache 2-licensed Python package that enables cross-project references in dbt-core.”</em> It quickly became the go-to open-source bridge.</p>
+<hr/>
+<h2 id="dbt-loom-how-it-works-under-the-hood">dbt-loom: How It Works Under the Hood<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#dbt-loom-how-it-works-under-the-hood" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>dbt-loom is a <strong>dbt Core plugin</strong>, a mechanism introduced in dbt Core v1.6 that lets you hook into dbt’s internal node resolution process.</p>
+<p>Specifically, dbt-loom implements the <code>get_nodes</code> hook. Every time dbt resolves nodes in your DAG, the plugin intercepts that call, reads a <code>manifest.json</code> from an upstream project, extracts all <strong>public models</strong>, and injects them as external nodes into your current project’s graph.</p>
+<p>The key insight: you don’t need the upstream project’s source code. You only need its <code>manifest.json</code>, the artifact dbt generates on every run describing every node in the project. This is the same contract dbt Cloud uses with its metadata service. dbt-loom replicates it for dbt Core.</p>
+<pre><code>                    dbt run
+  core_project  ──────────────▶  target/manifest.json
+  dim_customers                        │
+  access: public                       │  file / S3 / GCS / Azure
+                                       ▼
+                            dbt-loom reads manifest,
+  finance_project  ◀───────  injects dim_customers
+  ref('core_project',        as external node
+      'dim_customers')
+                            dbt-loom reads manifest,
+  marketing_project  ◀─────  injects dim_customers
+  ref('core_project',        as external node
+      'dim_customers')
+</code></pre>
+<p><img src="../dbt/attachments/dbt-loom-fan-out.excalidraw.png" width="auto" height="auto" alt="Example of fan-out pattern with dbt-loom"/></p>
+<p>This is the <strong>fan-out pattern</strong>: one upstream project exposes a public model, multiple downstream teams consume it independently. Each downstream project only needs the manifest (not the source code, not access to the upstream repo).</p>
+<hr/>
+<h2 id="the-demo-setup">The Demo Setup<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-demo-setup" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The demo repository has this layout:</p>
+<pre><code>dbt-loom-multi-project-demo/
+├── profiles/
+│   └── profiles.yml              # env-var-driven DuckDB path for all projects
+├── projects/
+│   ├── core_project/             # upstream: exposes dim_customers as public
+│   ├── finance_project/          # downstream: revenue by customer
+│   └── marketing_project/        # downstream: clicks by customer
+├── warehouse/
+│   └── analytics.duckdb          # shared DuckDB file
+├── scripts/
+│   ├── run_dbt_demo.sh           # one-shot end-to-end script
+│   ├── mark_external_nodes_for_docs.py
+│   └── flag_external_nodes.py
+├── .github/workflows/
+│   └── dbt-mesh-demo.yml         # CI showing two-job deployment order
+└── Makefile                      # per-project targets with enforced ordering
+</code></pre>
+<p>All three projects point to the same DuckDB file in separate schemas (<code>core</code>, <code>finance</code>, <code>marketing</code>), simulating a shared warehouse. Dependencies are managed with <code>uv</code>:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="toml" data-theme="github-light github-dark"><code data-language="toml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># pyproject.toml</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">[</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">project</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">]</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">dependencies = [</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">    &quot;dbt-core&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">    &quot;dbt-duckdb&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">    &quot;dbt-loom&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">]</span></span></code></pre></figure>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">uv</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> sync</span></span></code></pre></figure>
+<p>The DuckDB path and manifest path are driven by environment variables, so the repo works out of the box without editing any config files:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># profiles/profiles.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">core_project</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  outputs</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    dev</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">duckdb</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      path</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;{{ env_var('DBT_LOOM_WAREHOUSE_PATH', 'warehouse/analytics.duckdb') }}&quot;</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      schema</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      threads</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">4</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  target</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dev</span></span></code></pre></figure>
+<p>The same <code>env_var()</code> pattern applies to <code>finance_project</code> and <code>marketing_project</code> profiles.</p>
+<hr/>
+<h2 id="setting-up-dbt-loom-step-by-step">Setting Up dbt-loom Step by Step<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#setting-up-dbt-loom-step-by-step" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p><img src="../dbt/attachments/dbt-loom-manifest-lifecycle.png" width="auto" height="auto" alt="Schema of how dbt-loom resolves cross-project refs"/></p>
+<h3 id="1-declare-public-models-in-the-upstream-project">1. Declare public models in the upstream project<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#1-declare-public-models-in-the-upstream-project" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>In <code>core_project/models/schema.yml</code>, mark the models you want to expose downstream:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dim_customers</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    description</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Public customer dimension exposed to downstream projects.</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    access</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">public</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      contract</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        enforced</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    columns</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">integer</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        tests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">not_null</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">          - </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">unique</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_name</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">customer_tier</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        data_type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">varchar</span></span></code></pre></figure>
+<p>Two things matter here. <code>access: public</code> is the signal to dbt-loom that this model should be injected into downstream projects. <code>contract: enforced: true</code> makes the column definitions a hard contract, it means that dbt will fail the run if the actual output doesn’t match. Tests on <code>customer_id</code> (<code>not_null</code>, <code>unique</code>) are also defined at the source, not delegated to consumers. This is the right default for anything you expose across team boundaries.</p>
+<p>The model itself uses explicit casts to satisfy the contract:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="sql" data-theme="github-light github-dark"><code data-language="sql" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">-- core_project/models/dim_customers.sql</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">select</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  cast</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(customer_id  </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> integer</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> customer_id,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  cast</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(customer_name </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> varchar</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> customer_name,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  cast</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(customer_tier </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> varchar</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> customer_tier</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {{ ref(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'customers'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span></code></pre></figure>
+<h3 id="2-run-the-upstream-project-to-produce-the-manifest">2. Run the upstream project to produce the manifest<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#2-run-the-upstream-project-to-produce-the-manifest" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">export</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> DBT_PROFILES_DIR</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">$(</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">pwd</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)/profiles</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">export</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> DBT_LOOM_WAREHOUSE_PATH</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">$(</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">pwd</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)/warehouse/analytics.duckdb</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">export</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> CORE_PROJECT_MANIFEST_PATH</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">$(</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">pwd</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)/projects/core_project/target/manifest.json</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">cd</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> projects/core_project</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> seed</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">   # loads customers.csv → core.customers</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> run</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">    # builds core.dim_customers, writes target/manifest.json</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> test</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">   # validates not_null + unique on customer_id</span></span></code></pre></figure>
+<p>After this step, <code>core_project/target/manifest.json</code> contains the full node metadata for <code>dim_customers</code>, including its <code>access: public</code> declaration and enforced contract columns. This file is what dbt-loom will read.</p>
+<h3 id="3-configure-dbt-loom-in-each-downstream-project">3. Configure dbt-loom in each downstream project<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#3-configure-dbt-loom-in-each-downstream-project" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Create <code>dbt_loom.config.yml</code> at the root of each downstream project:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># finance_project/dbt_loom.config.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">manifests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">file</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      path</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">$CORE_PROJECT_MANIFEST_PATH</span></span></code></pre></figure>
+<p>The same config goes into <code>marketing_project/dbt_loom.config.yml</code>. The <code>$CORE_PROJECT_MANIFEST_PATH</code> env var is resolved at runtime by dbt-loom, you set it once and all downstream projects pick it up.</p>
+<p>Two things worth knowing here:</p>
+<p><strong>Naming gotcha:</strong> The config file must be named <code>dbt_loom.config.yml</code> with an <strong>underscore</strong>, dbt-loom looks for the underscored variant by default. You can override this with the <code>DBT_LOOM_CONFIG</code> environment variable.</p>
+<p><strong>No plugin registration needed:</strong> There is no <code>plugins:</code> block to add to <code>dbt_project.yml</code>. dbt-loom auto-discovers the config file when it’s present in the project directory. Your <code>dbt_project.yml</code> stays completely clean:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># finance_project/dbt_project.yml</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">finance_project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">version</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'1.0.0'</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">config-version</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">2</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">profile</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">finance_project</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">model-paths</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: [</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;models&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">]</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">seed-paths</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: [</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">&quot;seeds&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">]</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">models</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  finance_project</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    +materialized</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">table</span></span></code></pre></figure>
+<h3 id="4-reference-upstream-public-models-in-downstream-projects">4. Reference upstream public models in downstream projects<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#4-reference-upstream-public-models-in-downstream-projects" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>The finance project builds revenue by joining orders against the upstream customer dimension:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="sql" data-theme="github-light github-dark"><code data-language="sql" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">-- finance_project/models/fct_revenue_by_customer.sql</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">with</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> customers </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  select</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> *</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {{ ref(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'core_project'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'dim_customers'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">),</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">orders </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  select</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">    cast</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(order_id    </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> integer</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> order_id,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">    cast</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(customer_id </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> integer</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> customer_id,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">    cast</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(amount      </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> double)  </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> amount</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {{ ref(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'orders'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">select</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  c</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">customer_id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  c</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">customer_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  c</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">customer_tier</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  sum</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">o</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">amount</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> total_revenue</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> orders o</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">join</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> customers c </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">on</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> o</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">customer_id</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> c</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">customer_id</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">group by</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> 1</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">2</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">3</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">order by</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> 1</span></span></code></pre></figure>
+<p>The marketing project does the same with campaign click events:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="sql" data-theme="github-light github-dark"><code data-language="sql" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">-- marketing_project/models/fct_clicks_by_customer.sql</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">with</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> customers </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  select</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> *</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {{ ref(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'core_project'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'dim_customers'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">),</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">events </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  select</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">    cast</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(event_id    </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> integer</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> event_id,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">    cast</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(customer_id </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> integer</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> customer_id,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">    cast</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(clicks      </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> integer</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> clicks</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {{ ref(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">'campaign_events'</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) }}</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">)</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">select</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  c</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">customer_id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  c</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">customer_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  c</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">customer_tier</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">,</span></span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">  sum</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">e</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">clicks</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> total_clicks</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> events e</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">join</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> customers c </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">on</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> e</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">customer_id</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> c</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">customer_id</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">group by</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> 1</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">2</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">3</span></span>
+<span data-line><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">order by</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> 1</span></span></code></pre></figure>
+<p>Both use the exact same <code>ref('core_project', 'dim_customers')</code> syntax. When dbt resolves this, dbt-loom intercepts the node lookup, finds <code>dim_customers</code> in the loaded manifest, and injects it as an external node. dbt then knows its physical location (<code>core.dim_customers</code> in DuckDB) and builds the join correctly without either downstream project having access to <code>core_project</code>’s source code.</p>
+<h3 id="5-run-the-downstream-projects">5. Run the downstream projects<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#5-run-the-downstream-projects" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">cd</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> projects/finance_project</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> seed</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">   # loads orders.csv → finance.orders</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> run</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">    # builds finance.fct_revenue_by_customer</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> test</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">   # validates not_null on customer_id</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">cd</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> ../marketing_project</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> seed</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">   # loads campaign_events.csv → marketing.campaign_events</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> run</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">    # builds marketing.fct_clicks_by_customer</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> test</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">   # validates not_null on customer_id</span></span></code></pre></figure>
+<p>Expected outputs:</p>
+<p><strong>finance.fct_revenue_by_customer</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>customer_id</th><th>customer_name</th><th>customer_tier</th><th>total_revenue</th></tr></thead><tbody><tr><td>1</td><td>Alice</td><td>Gold</td><td>200.0</td></tr><tr><td>2</td><td>Bob</td><td>Silver</td><td>40.0</td></tr><tr><td>3</td><td>Carol</td><td>Gold</td><td>220.0</td></tr><tr><td>4</td><td>David</td><td>Bronze</td><td>15.25</td></tr></tbody></table></div>
+<p><strong>marketing.fct_clicks_by_customer</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>customer_id</th><th>customer_name</th><th>customer_tier</th><th>total_clicks</th></tr></thead><tbody><tr><td>1</td><td>Alice</td><td>Gold</td><td>7</td></tr><tr><td>2</td><td>Bob</td><td>Silver</td><td>4</td></tr><tr><td>3</td><td>Carol</td><td>Gold</td><td>10</td></tr><tr><td>4</td><td>David</td><td>Bronze</td><td>1</td></tr></tbody></table></div>
+<p>Or run everything in one shot:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">make</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> demo</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># or: scripts/run_dbt_demo.sh</span></span></code></pre></figure>
+<p>The Makefile also exposes per-project targets with enforced ordering, <code>make finance</code> automatically runs <code>make core</code> first:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="makefile" data-theme="github-light github-dark"><code data-language="makefile" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">finance</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: core   </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># depends on core target</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    ...</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">marketing</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: core  </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># depends on core target</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    ...</span></span></code></pre></figure>
+<p>This enforces the correct execution order locally without having to remember it manually.</p>
+<hr/>
+<h2 id="manifest-sources-beyond-local-files">Manifest Sources: Beyond Local Files<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#manifest-sources-beyond-local-files" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The demo uses a local file path via <code>$CORE_PROJECT_MANIFEST_PATH</code>, the right choice for a mono repo. For production multi-repo setups, you publish the manifest to object storage after each upstream CI run and point the config there instead.</p>
+<p><strong>AWS S3:</strong></p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">manifests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">s3</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      bucket_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">your-dbt-artifacts-bucket</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      object_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project/manifest.json</span></span></code></pre></figure>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">pip</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> install</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> &quot;dbt-loom[s3]&quot;</span></span></code></pre></figure>
+<p><strong>Google Cloud Storage:</strong></p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">manifests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">gcs</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      project_id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">your-gcp-project-id</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      bucket_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">your-dbt-artifacts-bucket</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      object_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project/manifest.json</span></span></code></pre></figure>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">pip</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> install</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> &quot;dbt-loom[gcs]&quot;</span></span></code></pre></figure>
+<p><strong>Azure Blob Storage:</strong></p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">manifests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">azure</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      container_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dbt-artifacts</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      blob_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project/manifest.json</span></span></code></pre></figure>
+<p><strong>dbt Cloud (hybrid setup):</strong></p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">manifests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dbt_cloud</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      account_id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">12345</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      job_id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">67890</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      api_endpoint</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">https://cloud.getdbt.com</span></span></code></pre></figure>
+<p>dbt-loom also supports <strong>gzipped manifests</strong> natively, suffix the object name with <code>.gz</code> and it decompresses automatically:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  object_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project/manifest.json.gz</span></span></code></pre></figure>
+<hr/>
+<h2 id="deployment-enforcing-execution-order-in-ci">Deployment: Enforcing Execution Order in CI<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#deployment-enforcing-execution-order-in-ci" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The critical operational constraint with dbt-loom is <strong>manifest freshness</strong> and <strong>execution order</strong>. The downstream projects must run <em>after</em> the upstream one has completed and published its manifest. This is obvious with one downstream consumer, but becomes a real coordination problem when you have multiple, both <code>finance_project</code> and <code>marketing_project</code> depend on <code>core_project</code>, so <code>core_project</code> must always go first.</p>
+<p><img src="../dbt/attachments/dbt-loom-ci-pipeline.png" width="auto" height="auto" alt="GitHub Actions example with dbt-loom dependencies"/></p>
+<p>The GitHub Actions workflow in the demo makes this explicit with two jobs:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">jobs</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  core_project</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    runs-on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ubuntu-latest</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    steps</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">actions/checkout@v4</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">astral-sh/setup-uv@v5</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">uv sync</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Build core project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        env</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          DBT_PROFILES_DIR</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.workspace }}/profiles</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          DBT_LOOM_WAREHOUSE_PATH</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.workspace }}/warehouse/analytics.duckdb</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">          cd projects/core_project</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">          ../../.venv/bin/dbt seed</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">          ../../.venv/bin/dbt run</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">          ../../.venv/bin/dbt test</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Publish manifest artifact</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">actions/upload-artifact@v4</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        with</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core-manifest</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          path</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">projects/core_project/target/manifest.json</span></span>
+<span data-line> </span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">  downstream_projects</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    runs-on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">ubuntu-latest</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    needs</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">          # ← enforces execution order</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    steps</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">actions/checkout@v4</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">astral-sh/setup-uv@v5</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">uv sync</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Download core manifest</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        uses</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">actions/download-artifact@v4</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        with</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core-manifest</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          path</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">projects/core_project/target</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Build finance project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        env</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          DBT_PROFILES_DIR</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.workspace }}/profiles</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          DBT_LOOM_WAREHOUSE_PATH</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.workspace }}/warehouse/analytics.duckdb</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          CORE_PROJECT_MANIFEST_PATH</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.workspace }}/projects/core_project/target/manifest.json</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">          cd projects/finance_project</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">          ../../.venv/bin/dbt seed &amp;&amp; ../../.venv/bin/dbt run &amp;&amp; ../../.venv/bin/dbt test</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">Build marketing project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        env</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          DBT_PROFILES_DIR</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.workspace }}/profiles</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          DBT_LOOM_WAREHOUSE_PATH</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.workspace }}/warehouse/analytics.duckdb</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">          CORE_PROJECT_MANIFEST_PATH</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">${{ github.workspace }}/projects/core_project/target/manifest.json</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">        run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">|</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">          cd projects/marketing_project</span></span>
+<span data-line><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">          ../../.venv/bin/dbt seed &amp;&amp; ../../.venv/bin/dbt run &amp;&amp; ../../.venv/bin/dbt test</span></span></code></pre></figure>
+<p>The <code>needs: core_project</code> dependency is what enforces the pipeline order. The manifest is transferred between jobs as a GitHub Actions artifact.</p>
+<p><strong>One DuckDB-specific caveat worth understanding.</strong> In this demo, the downstream job also needs the DuckDB warehouse file to exist because <code>core.dim_customers</code> is a table in that file and the downstream models join against it. In a real production setup with a cloud warehouse (Snowflake, BigQuery, Redshift, etc.), this problem doesn’t exist: the upstream project builds its tables into the warehouse and any downstream project connecting to the same warehouse can query them. DuckDB is a local file, so you’d additionally need to pass the warehouse file as an artifact between CI jobs. The manifest-only transfer is the real pattern, DuckDB just adds a file-system wrinkle.</p>
+<p>With <strong>Dagster</strong> across code locations, you’d model <code>dim_customers</code> as an asset dependency that <code>fct_revenue_by_customer</code> and <code>fct_clicks_by_customer</code> explicitly declare, Dagster then enforces run order and propagates failure signals across projects. With <strong>Airflow</strong>, an <code>ExternalTaskSensor</code> or <code>TriggerDagRunOperator</code> covers the same need.</p>
+<hr/>
+<h2 id="the-documentation-limitation-and-a-workaround">The Documentation Limitation and a Workaround<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-documentation-limitation-and-a-workaround" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>This is the roughest edge of dbt-loom, and it’s worth being direct about it.</p>
+<p>When you run <code>dbt docs generate</code> in a downstream project, dbt-loom injects external nodes into the graph but they appear with minimal metadata. In the dbt docs UI, <code>dim_customers</code> shows up as an external model without its description, column docs, or any indication of where it comes from. For a small team this is manageable. At scale it becomes confusing.</p>
+<p>The demo includes two Python scripts that address this directly.</p>
+<p><strong><code>mark_external_nodes_for_docs.py</code></strong> patches the <code>target/manifest.json</code> after <code>dbt docs generate</code> runs. It finds every node whose <code>package_name</code> differs from the current project, prefixes its name with <code>[EXTERNAL]</code>, adds a <code>[External node injected by dbt-loom]</code> marker to its description, and sets <code>meta.loom_external: true</code>. The result is that external nodes are visually distinguishable in the lineage UI:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">dbt</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> docs</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> generate</span></span>
+<span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">python</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> scripts/mark_external_nodes_for_docs.py</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># → patches finance_project/target/manifest.json in place</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># → dim_customers is now named &quot;[EXTERNAL] dim_customers&quot;</span></span></code></pre></figure>
+<p><strong><code>flag_external_nodes.py</code></strong> generates a post-docs audit report in both JSON and Markdown format:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="bash" data-theme="github-light github-dark"><code data-language="bash" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">python</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> scripts/flag_external_nodes.py</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># → writes target/external_nodes_report.json</span></span>
+<span data-line><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"># → writes target/external_nodes_report.md</span></span></code></pre></figure>
+<p>The Markdown report looks like:</p>
+<pre><code># External Nodes Report: finance_project
+
+Total external nodes: 1
+
+## By Resource Type
+- `model`: 1
+
+## By Package
+- `core_project`: 1
+
+## Nodes
+| Package       | Type    | Name           | Unique ID                          |
+| core_project  | model   | dim_customers  | model.core_project.dim_customers   |
+</code></pre>
+<p>The script also accepts a <code>--fail-on-external</code> flag, which exits with a non-zero status if any external nodes are detected. This is useful in a governance-focused CI check, for example, asserting that a project has no unexpected external dependencies beyond what’s been explicitly approved.</p>
+<p>These scripts are workarounds, not solutions. The underlying limitation is a known constraint of dbt’s plugin API: injected nodes are not full <code>ManifestNode</code> objects, so <code>dbt docs generate</code> can’t enrich them the way it would native models. This may improve as the plugin API matures.</p>
+<hr/>
+<h2 id="caveats-to-know-before-adopting">Caveats to Know Before Adopting<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#caveats-to-know-before-adopting" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p><strong>Plugin API is still beta.</strong> The dbt plugin system arrived in v1.6 and is still evolving. Pin your dbt and dbt-loom versions together and test upgrades carefully before rolling them to production.</p>
+<p><strong>Manifest freshness is your responsibility.</strong> There’s no background metadata service. If the upstream project runs and schema changes but the manifest isn’t republished, downstream projects silently build on stale information. Make manifest publishing a required, non-optional CI step.</p>
+<p><strong>Mark manifests as optional during bootstrapping.</strong> When standing up a new downstream project before the upstream has ever run, avoid hard failures:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">manifests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">file</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      path</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">$CORE_PROJECT_MANIFEST_PATH</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    optional</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">true</span></span></code></pre></figure>
+<p><strong>Exclude upstream packages from injection.</strong> If your upstream project uses <code>dbt_project_evaluator</code> or similar, you don’t want those nodes leaking into your downstream graph:</p>
+<figure data-rehype-pretty-code-figure><pre tabindex="0" data-language="yaml" data-theme="github-light github-dark"><code data-language="yaml" data-theme="github-light github-dark" style="display:grid;"><span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">manifests</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  - </span><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">core_project</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">s3</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    config</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      bucket_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">your-bucket</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">      object_name</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">: </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">manifest.json</span></span>
+<span data-line><span style="--shiki-light:#22863A;--shiki-dark:#85E89D;">    excluded_packages</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">:</span></span>
+<span data-line><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      - </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">dbt_project_evaluator</span></span></code></pre></figure>
+<hr/>
+<h2 id="when-to-use-dbt-loom-vs-when-to-consider-dbt-cloud-mesh">When to Use dbt-loom vs. When to Consider dbt Cloud Mesh<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#when-to-use-dbt-loom-vs-when-to-consider-dbt-cloud-mesh" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p><strong>Use dbt-loom if:</strong></p>
+<ul>
+<li>You’re on dbt Core and want multi-project references without a Cloud migration</li>
+<li>Your team is comfortable owning manifest publishing in CI</li>
+<li>You have a small-to-medium number of upstream projects (roughly 1–4)</li>
+<li>You want to validate dbt Mesh patterns before committing to them at scale</li>
+</ul>
+<p><strong>Consider dbt Cloud Mesh if:</strong></p>
+<ul>
+<li>You need first-class cross-project lineage in a shared UI</li>
+<li>You want environment-aware ref resolution (staging refs staging, prod refs prod) handled automatically</li>
+<li>You have many interdependent projects and manifest management is becoming a coordination burden</li>
+<li>You need model versioning and access policy governance at scale</li>
+</ul>
+<hr/>
+<h2 id="wrapping-up">Wrapping Up<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#wrapping-up" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>The mono repo vs. multi repo question isn’t primarily a tooling question, it’s more about team ownership boundaries. If your data teams are becoming meaningfully independent, splitting dbt projects along domain lines is a sound architectural move regardless of which repo strategy you adopt.</p>
+<p>dbt-loom makes that move accessible without a Cloud contract. The mechanism is clean: upstream projects run and publish a <code>manifest.json</code>, downstream projects consume it and reference public models with the exact same <code>ref()</code> syntax dbt Cloud Mesh uses. No source code sharing, no tight coupling, just metadata.</p>
+<p>The fan-out pattern in the demo (one <code>core_project</code> feeding both <code>finance_project</code> and <code>marketing_project</code>) is the topology you’ll encounter most often in practice. Get the execution order right (upstream first, always), enforce public model contracts, keep your manifests fresh, and you have a working open-source data mesh.</p>
+<p>The docs limitation is real but manageable with the patching scripts in the demo. If rich cross-project lineage in a shared UI is a hard requirement for your team, that’s probably the clearest signal to look at dbt Cloud Mesh seriously.</p></article><hr/><div class="page-footer"><div class="newsletter-container" id="newsletter-banner"><iframe src="https://embeds.beehiiv.com/31677076-bfa0-485d-80e7-72c5f7d11891" data-test-id="beehiiv-embed" width="100%" height="320" frameborder="0" scrolling="no" style="border-radius:4px;border:2px solid #e5e7eb;margin:0px;background-color:transparent;"></iframe></div><div id="page-reactions-container" class="page-reactions-container"><h4>React to this article!</h4><div class="reaction-buttons-wrapper"></div></div></div></div><div class="right sidebar"><div class="toc desktop-only"><button type="button" class="toc-header" aria-controls="toc-content" aria-expanded="true"><h3>Table of Contents</h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><ul class="toc-content overflow" id="list-1"><li class="depth-0"><a href="#the-problem-with-monolithic-dbt-projects" data-for="the-problem-with-monolithic-dbt-projects">The Problem with Monolithic dbt Projects</a></li><li class="depth-0"><a href="#mono-repo-vs-multi-repo-what-are-we-actually-deciding" data-for="mono-repo-vs-multi-repo-what-are-we-actually-deciding">Mono Repo vs. Multi Repo: What Are We Actually Deciding?</a></li><li class="depth-0"><a href="#what-is-dbt-mesh-and-why-its-gated" data-for="what-is-dbt-mesh-and-why-its-gated">What Is dbt Mesh and Why It’s Gated</a></li><li class="depth-0"><a href="#dbt-loom-how-it-works-under-the-hood" data-for="dbt-loom-how-it-works-under-the-hood">dbt-loom: How It Works Under the Hood</a></li><li class="depth-0"><a href="#the-demo-setup" data-for="the-demo-setup">The Demo Setup</a></li><li class="depth-0"><a href="#setting-up-dbt-loom-step-by-step" data-for="setting-up-dbt-loom-step-by-step">Setting Up dbt-loom Step by Step</a></li><li class="depth-1"><a href="#1-declare-public-models-in-the-upstream-project" data-for="1-declare-public-models-in-the-upstream-project">1. Declare public models in the upstream project</a></li><li class="depth-1"><a href="#2-run-the-upstream-project-to-produce-the-manifest" data-for="2-run-the-upstream-project-to-produce-the-manifest">2. Run the upstream project to produce the manifest</a></li><li class="depth-1"><a href="#3-configure-dbt-loom-in-each-downstream-project" data-for="3-configure-dbt-loom-in-each-downstream-project">3. Configure dbt-loom in each downstream project</a></li><li class="depth-1"><a href="#4-reference-upstream-public-models-in-downstream-projects" data-for="4-reference-upstream-public-models-in-downstream-projects">4. Reference upstream public models in downstream projects</a></li><li class="depth-1"><a href="#5-run-the-downstream-projects" data-for="5-run-the-downstream-projects">5. Run the downstream projects</a></li><li class="depth-0"><a href="#manifest-sources-beyond-local-files" data-for="manifest-sources-beyond-local-files">Manifest Sources: Beyond Local Files</a></li><li class="depth-0"><a href="#deployment-enforcing-execution-order-in-ci" data-for="deployment-enforcing-execution-order-in-ci">Deployment: Enforcing Execution Order in CI</a></li><li class="depth-0"><a href="#the-documentation-limitation-and-a-workaround" data-for="the-documentation-limitation-and-a-workaround">The Documentation Limitation and a Workaround</a></li><li class="depth-0"><a href="#caveats-to-know-before-adopting" data-for="caveats-to-know-before-adopting">Caveats to Know Before Adopting</a></li><li class="depth-0"><a href="#when-to-use-dbt-loom-vs-when-to-consider-dbt-cloud-mesh" data-for="when-to-use-dbt-loom-vs-when-to-consider-dbt-cloud-mesh">When to Use dbt-loom vs. When to Consider dbt Cloud Mesh</a></li><li class="depth-0"><a href="#wrapping-up" data-for="wrapping-up">Wrapping Up</a></li><li class="overflow-end"></li></ul></div></div><footer class=" footer-container"><div class="footer-left"><p>Created with ❤️ by <a href="https://pierre-munhoz-portfolio.vercel.app/" target="_blank">Pierre Munhoz</a> © 2026</p></div><div class="footer-right"><ul><li><a href="https://grumpystack.beehiiv.com/subscribe" target="_blank">Newsletter</a></li><li><a href="https://github.com/p-munhoz/" target="_blank">GitHub</a></li><li><a href="https://www.linkedin.com/in/pierre-munhoz/" target="_blank">LinkedIn</a></li><li><a href="/legal" target="_blank">Legal Notice</a></li><li><a href="/privacy-policy" target="_blank">Privacy Policy</a></li><li><a href="https://ko-fi.com/learn_with_pierre" target="_blank">Support me (Ko-fi)</a></li></ul></div></footer></div></div></body><script type="application/javascript">function n(){let t=this.parentElement;t.classList.toggle("is-collapsed");let e=t.getElementsByClassName("callout-content")[0];if(!e)return;let l=t.classList.contains("is-collapsed");e.style.gridTemplateRows=l?"0fr":"1fr"}function c(){let t=document.getElementsByClassName("callout is-collapsible");for(let e of t){let l=e.getElementsByClassName("callout-title")[0],s=e.getElementsByClassName("callout-content")[0];if(!l||!s)continue;l.addEventListener("click",n),window.addCleanup(()=>l.removeEventListener("click",n));let o=e.classList.contains("is-collapsed");s.style.gridTemplateRows=o?"0fr":"1fr"}}document.addEventListener("nav",c);
+</script><script type="module">function f(i,e){if(!i)return;function r(o){o.target===this&&(o.preventDefault(),o.stopPropagation(),e())}function t(o){o.key.startsWith("Esc")&&(o.preventDefault(),e())}i?.addEventListener("click",r),window.addCleanup(()=>i?.removeEventListener("click",r)),document.addEventListener("keydown",t),window.addCleanup(()=>document.removeEventListener("keydown",t))}function y(i){for(;i.firstChild;)i.removeChild(i.firstChild)}var h=class{constructor(e,r){this.container=e;this.content=r;this.setupEventListeners(),this.setupNavigationControls(),this.resetTransform()}isDragging=!1;startPan={x:0,y:0};currentPan={x:0,y:0};scale=1;MIN_SCALE=.5;MAX_SCALE=3;cleanups=[];setupEventListeners(){let e=this.onMouseDown.bind(this),r=this.onMouseMove.bind(this),t=this.onMouseUp.bind(this),o=this.resetTransform.bind(this);this.container.addEventListener("mousedown",e),document.addEventListener("mousemove",r),document.addEventListener("mouseup",t),window.addEventListener("resize",o),this.cleanups.push(()=>this.container.removeEventListener("mousedown",e),()=>document.removeEventListener("mousemove",r),()=>document.removeEventListener("mouseup",t),()=>window.removeEventListener("resize",o))}cleanup(){for(let e of this.cleanups)e()}setupNavigationControls(){let e=document.createElement("div");e.className="mermaid-controls";let r=this.createButton("+",()=>this.zoom(.1)),t=this.createButton("-",()=>this.zoom(-.1)),o=this.createButton("Reset",()=>this.resetTransform());e.appendChild(t),e.appendChild(o),e.appendChild(r),this.container.appendChild(e)}createButton(e,r){let t=document.createElement("button");return t.textContent=e,t.className="mermaid-control-button",t.addEventListener("click",r),window.addCleanup(()=>t.removeEventListener("click",r)),t}onMouseDown(e){e.button===0&&(this.isDragging=!0,this.startPan={x:e.clientX-this.currentPan.x,y:e.clientY-this.currentPan.y},this.container.style.cursor="grabbing")}onMouseMove(e){this.isDragging&&(e.preventDefault(),this.currentPan={x:e.clientX-this.startPan.x,y:e.clientY-this.startPan.y},this.updateTransform())}onMouseUp(){this.isDragging=!1,this.container.style.cursor="grab"}zoom(e){let r=Math.min(Math.max(this.scale+e,this.MIN_SCALE),this.MAX_SCALE),t=this.content.getBoundingClientRect(),o=t.width/2,n=t.height/2,c=r-this.scale;this.currentPan.x-=o*c,this.currentPan.y-=n*c,this.scale=r,this.updateTransform()}updateTransform(){this.content.style.transform=`translate(${this.currentPan.x}px, ${this.currentPan.y}px) scale(${this.scale})`}resetTransform(){this.scale=1;let e=this.content.querySelector("svg");this.currentPan={x:e.getBoundingClientRect().width/2,y:e.getBoundingClientRect().height/2},this.updateTransform()}},C=["--secondary","--tertiary","--gray","--light","--lightgray","--highlight","--dark","--darkgray","--codeFont"],E;document.addEventListener("nav",async()=>{let e=document.querySelector(".center").querySelectorAll("code.mermaid");if(e.length===0)return;E||=await import("https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.esm.min.mjs");let r=E.default,t=new WeakMap;for(let n of e)t.set(n,n.innerText);async function o(){for(let s of e){s.removeAttribute("data-processed");let a=t.get(s);a&&(s.innerHTML=a)}let n=C.reduce((s,a)=>(s[a]=window.getComputedStyle(document.documentElement).getPropertyValue(a),s),{}),c=document.documentElement.getAttribute("saved-theme")==="dark";r.initialize({startOnLoad:!1,securityLevel:"loose",theme:c?"dark":"base",themeVariables:{fontFamily:n["--codeFont"],primaryColor:n["--light"],primaryTextColor:n["--darkgray"],primaryBorderColor:n["--tertiary"],lineColor:n["--darkgray"],secondaryColor:n["--secondary"],tertiaryColor:n["--tertiary"],clusterBkg:n["--light"],edgeLabelBackground:n["--highlight"]}}),await r.run({nodes:e})}await o(),document.addEventListener("themechange",o),window.addCleanup(()=>document.removeEventListener("themechange",o));for(let n=0;n<e.length;n++){let v=function(){let g=l.querySelector("#mermaid-space"),m=l.querySelector(".mermaid-content");if(!m)return;y(m);let w=c.querySelector("svg").cloneNode(!0);m.appendChild(w),l.classList.add("active"),g.style.cursor="grab",u=new h(g,m)},M=function(){l.classList.remove("active"),u?.cleanup(),u=null},c=e[n],s=c.parentElement,a=s.querySelector(".clipboard-button"),d=s.querySelector(".expand-button"),p=window.getComputedStyle(a),L=a.offsetWidth+parseFloat(p.marginLeft||"0")+parseFloat(p.marginRight||"0");d.style.right=`calc(${L}px + 0.3rem)`,s.prepend(d);let l=s.querySelector("#mermaid-container");if(!l)return;let u=null;d.addEventListener("click",v),f(l,M),window.addCleanup(()=>{u?.cleanup(),d.removeEventListener("click",v)})}});
+</script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/copy-tex.min.js" type="application/javascript"></script><script src="../postscript.js" type="module"></script></html>
