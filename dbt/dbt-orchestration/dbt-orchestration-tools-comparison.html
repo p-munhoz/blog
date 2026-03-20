@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en"><head><title>Best dbt Orchestration Tools: Dagster vs Airflow vs Prefect vs Actions</title><meta charset="utf-8"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted Grotesk:wght@400;700&amp;family=Source Sans Pro:ital,wght@0,400;0,600;1,400;1,600&amp;family=IBM Plex Mono:wght@400;600&amp;display=swap"/><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin="anonymous"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link rel="canonical" href="https://blog.pmunhoz.com/dbt/dbt-orchestration/dbt-orchestration-tools-comparison"/><meta name="og:site_name" content="❄️ Pierre Munhoz engineering blog"/><meta property="og:title" content="Best dbt Orchestration Tools: Dagster vs Airflow vs Prefect vs Actions"/><meta property="og:type" content="website"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="Best dbt Orchestration Tools: Dagster vs Airflow vs Prefect vs Actions"/><meta name="twitter:description" content="A practical, code-backed comparison of the top open-source dbt orchestration tools. Evaluate Dagster, Airflow, Prefect, and GitHub Actions based on observability, infrastructure overhead, and dbt-native integration."/><meta property="og:description" content="A practical, code-backed comparison of the top open-source dbt orchestration tools. Evaluate Dagster, Airflow, Prefect, and GitHub Actions based on observability, infrastructure overhead, and dbt-native integration."/><meta property="og:image:alt" content="A practical, code-backed comparison of the top open-source dbt orchestration tools. Evaluate Dagster, Airflow, Prefect, and GitHub Actions based on observability, infrastructure overhead, and dbt-native integration."/><meta property="twitter:domain" content="blog.pmunhoz.com"/><meta property="og:url" content="https://blog.pmunhoz.com/dbt/dbt-orchestration/dbt-orchestration-tools-comparison"/><meta property="twitter:url" content="https://blog.pmunhoz.com/dbt/dbt-orchestration/dbt-orchestration-tools-comparison"/><link rel="icon" href="../../static/icon.png"/><meta name="description" content="A practical, code-backed comparison of the top open-source dbt orchestration tools. Evaluate Dagster, Airflow, Prefect, and GitHub Actions based on observability, infrastructure overhead, and dbt-native integration."/><meta name="generator" content="Quartz"/><meta name="google-site-verification" content="Uk-Wy3I4Mu2CyP3YBgy_L-a6iyyu_sRBz4GZVsJQyu0"/><meta name="google-site-verification" content="W86SYK7DAZVSK9aULSjhmzXTmWNGqNLKHpGms2aplsM"/><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Best dbt Orchestration Tools: Dagster vs Airflow vs Prefect vs Actions","author":{"@type":"Person","name":"Pierre Munhoz"},"datePublished":"2026-03-20T00:00:00.000Z","url":"https://blog.pmunhoz.com/dbt/dbt-orchestration/dbt-orchestration-tools-comparison","publisher":{"@type":"Organization","name":"Pierre Munhoz Engineering Blog"},"description":"A practical, code-backed comparison of the top open-source dbt orchestration tools. Evaluate Dagster, Airflow, Prefect, and GitHub Actions based on observability, infrastructure overhead, and dbt-native integration."}</script><link href="../../index.css" rel="stylesheet" type="text/css" spa-preserve/><style>.expand-button {
+  position: absolute;
+  display: flex;
+  float: right;
+  padding: 0.4rem;
+  margin: 0.3rem;
+  right: 0;
+  color: var(--gray);
+  border-color: var(--dark);
+  background-color: var(--light);
+  border: 1px solid;
+  border-radius: 5px;
+  opacity: 0;
+  transition: 0.2s;
+}
+.expand-button > svg {
+  fill: var(--light);
+  filter: contrast(0.3);
+}
+.expand-button:hover {
+  cursor: pointer;
+  border-color: var(--secondary);
+}
+.expand-button:focus {
+  outline: 0;
+}
+
+pre:hover > .expand-button {
+  opacity: 1;
+  transition: 0.2s;
+}
+
+#mermaid-container {
+  position: fixed;
+  contain: layout;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: none;
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+}
+#mermaid-container.active {
+  display: inline-block;
+}
+#mermaid-container > #mermaid-space {
+  border: 1px solid var(--lightgray);
+  background-color: var(--light);
+  border-radius: 5px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 80vh;
+  width: 80vw;
+  overflow: hidden;
+}
+#mermaid-container > #mermaid-space > .mermaid-content {
+  padding: 2rem;
+  position: relative;
+  transform-origin: 0 0;
+  transition: transform 0.1s ease;
+  overflow: visible;
+  min-height: 200px;
+  min-width: 200px;
+}
+#mermaid-container > #mermaid-space > .mermaid-content pre {
+  margin: 0;
+  border: none;
+}
+#mermaid-container > #mermaid-space > .mermaid-content svg {
+  max-width: none;
+  height: auto;
+}
+#mermaid-container > #mermaid-space > .mermaid-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: var(--light);
+  border: 1px solid var(--lightgray);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--lightgray);
+  background: var(--light);
+  color: var(--dark);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: var(--bodyFont);
+  transition: all 0.2s ease;
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button:hover {
+  background: var(--lightgray);
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button:active {
+  transform: translateY(1px);
+}
+#mermaid-container > #mermaid-space > .mermaid-controls .mermaid-control-button:nth-child(2) {
+  width: auto;
+  padding: 0 12px;
+  font-size: 14px;
+}
+/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiL2hvbWUvcnVubmVyL3dvcmsvcXVhcnR6L3F1YXJ0ei9wcml2YXRlLXJlcG8vcXVhcnR6L2NvbXBvbmVudHMvc3R5bGVzIiwic291cmNlcyI6WyJtZXJtYWlkLmlubGluZS5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7O0FBRUE7RUFDRTtFQUNBOztBQUdGO0VBQ0U7RUFDQTs7QUFHRjtFQUNFOzs7QUFLRjtFQUNFO0VBQ0E7OztBQUlKO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTs7QUFFQTtFQUNFOztBQUdGO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7O0FBRUE7RUFDRTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTs7QUFFQTtFQUNFO0VBQ0E7O0FBR0Y7RUFDRTtFQUNBOztBQUlKO0VBQ0U7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTs7QUFFQTtFQUNFO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7RUFDQTtFQUNBO0VBQ0E7O0FBRUE7RUFDRTs7QUFHRjtFQUNFOztBQUlGO0VBQ0U7RUFDQTtFQUNBIiwic291cmNlc0NvbnRlbnQiOlsiLmV4cGFuZC1idXR0b24ge1xuICBwb3NpdGlvbjogYWJzb2x1dGU7XG4gIGRpc3BsYXk6IGZsZXg7XG4gIGZsb2F0OiByaWdodDtcbiAgcGFkZGluZzogMC40cmVtO1xuICBtYXJnaW46IDAuM3JlbTtcbiAgcmlnaHQ6IDA7IC8vIE5PVEU6IHJpZ2h0IHdpbGwgYmUgc2V0IGluIG1lcm1haWQuaW5saW5lLnRzXG4gIGNvbG9yOiB2YXIoLS1ncmF5KTtcbiAgYm9yZGVyLWNvbG9yOiB2YXIoLS1kYXJrKTtcbiAgYmFja2dyb3VuZC1jb2xvcjogdmFyKC0tbGlnaHQpO1xuICBib3JkZXI6IDFweCBzb2xpZDtcbiAgYm9yZGVyLXJhZGl1czogNXB4O1xuICBvcGFjaXR5OiAwO1xuICB0cmFuc2l0aW9uOiAwLjJzO1xuXG4gICYgPiBzdmcge1xuICAgIGZpbGw6IHZhcigtLWxpZ2h0KTtcbiAgICBmaWx0ZXI6IGNvbnRyYXN0KDAuMyk7XG4gIH1cblxuICAmOmhvdmVyIHtcbiAgICBjdXJzb3I6IHBvaW50ZXI7XG4gICAgYm9yZGVyLWNvbG9yOiB2YXIoLS1zZWNvbmRhcnkpO1xuICB9XG5cbiAgJjpmb2N1cyB7XG4gICAgb3V0bGluZTogMDtcbiAgfVxufVxuXG5wcmUge1xuICAmOmhvdmVyID4gLmV4cGFuZC1idXR0b24ge1xuICAgIG9wYWNpdHk6IDE7XG4gICAgdHJhbnNpdGlvbjogMC4ycztcbiAgfVxufVxuXG4jbWVybWFpZC1jb250YWluZXIge1xuICBwb3NpdGlvbjogZml4ZWQ7XG4gIGNvbnRhaW46IGxheW91dDtcbiAgei1pbmRleDogOTk5O1xuICBsZWZ0OiAwO1xuICB0b3A6IDA7XG4gIHdpZHRoOiAxMDB2dztcbiAgaGVpZ2h0OiAxMDB2aDtcbiAgb3ZlcmZsb3c6IGhpZGRlbjtcbiAgZGlzcGxheTogbm9uZTtcbiAgYmFja2Ryb3AtZmlsdGVyOiBibHVyKDRweCk7XG4gIGJhY2tncm91bmQ6IHJnYmEoMCwgMCwgMCwgMC41KTtcblxuICAmLmFjdGl2ZSB7XG4gICAgZGlzcGxheTogaW5saW5lLWJsb2NrO1xuICB9XG5cbiAgJiA+ICNtZXJtYWlkLXNwYWNlIHtcbiAgICBib3JkZXI6IDFweCBzb2xpZCB2YXIoLS1saWdodGdyYXkpO1xuICAgIGJhY2tncm91bmQtY29sb3I6IHZhcigtLWxpZ2h0KTtcbiAgICBib3JkZXItcmFkaXVzOiA1cHg7XG4gICAgcG9zaXRpb246IGZpeGVkO1xuICAgIHRvcDogNTAlO1xuICAgIGxlZnQ6IDUwJTtcbiAgICB0cmFuc2Zvcm06IHRyYW5zbGF0ZSgtNTAlLCAtNTAlKTtcbiAgICBoZWlnaHQ6IDgwdmg7XG4gICAgd2lkdGg6IDgwdnc7XG4gICAgb3ZlcmZsb3c6IGhpZGRlbjtcblxuICAgICYgPiAubWVybWFpZC1jb250ZW50IHtcbiAgICAgIHBhZGRpbmc6IDJyZW07XG4gICAgICBwb3NpdGlvbjogcmVsYXRpdmU7XG4gICAgICB0cmFuc2Zvcm0tb3JpZ2luOiAwIDA7XG4gICAgICB0cmFuc2l0aW9uOiB0cmFuc2Zvcm0gMC4xcyBlYXNlO1xuICAgICAgb3ZlcmZsb3c6IHZpc2libGU7XG4gICAgICBtaW4taGVpZ2h0OiAyMDBweDtcbiAgICAgIG1pbi13aWR0aDogMjAwcHg7XG5cbiAgICAgIHByZSB7XG4gICAgICAgIG1hcmdpbjogMDtcbiAgICAgICAgYm9yZGVyOiBub25lO1xuICAgICAgfVxuXG4gICAgICBzdmcge1xuICAgICAgICBtYXgtd2lkdGg6IG5vbmU7XG4gICAgICAgIGhlaWdodDogYXV0bztcbiAgICAgIH1cbiAgICB9XG5cbiAgICAmID4gLm1lcm1haWQtY29udHJvbHMge1xuICAgICAgcG9zaXRpb246IGFic29sdXRlO1xuICAgICAgYm90dG9tOiAyMHB4O1xuICAgICAgcmlnaHQ6IDIwcHg7XG4gICAgICBkaXNwbGF5OiBmbGV4O1xuICAgICAgZ2FwOiA4cHg7XG4gICAgICBwYWRkaW5nOiA4cHg7XG4gICAgICBiYWNrZ3JvdW5kOiB2YXIoLS1saWdodCk7XG4gICAgICBib3JkZXI6IDFweCBzb2xpZCB2YXIoLS1saWdodGdyYXkpO1xuICAgICAgYm9yZGVyLXJhZGl1czogNnB4O1xuICAgICAgYm94LXNoYWRvdzogMCAycHggNHB4IHJnYmEoMCwgMCwgMCwgMC4xKTtcbiAgICAgIHotaW5kZXg6IDI7XG5cbiAgICAgIC5tZXJtYWlkLWNvbnRyb2wtYnV0dG9uIHtcbiAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAgYWxpZ24taXRlbXM6IGNlbnRlcjtcbiAgICAgICAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7XG4gICAgICAgIHdpZHRoOiAzMnB4O1xuICAgICAgICBoZWlnaHQ6IDMycHg7XG4gICAgICAgIHBhZGRpbmc6IDA7XG4gICAgICAgIGJvcmRlcjogMXB4IHNvbGlkIHZhcigtLWxpZ2h0Z3JheSk7XG4gICAgICAgIGJhY2tncm91bmQ6IHZhcigtLWxpZ2h0KTtcbiAgICAgICAgY29sb3I6IHZhcigtLWRhcmspO1xuICAgICAgICBib3JkZXItcmFkaXVzOiA0cHg7XG4gICAgICAgIGN1cnNvcjogcG9pbnRlcjtcbiAgICAgICAgZm9udC1zaXplOiAxNnB4O1xuICAgICAgICBmb250LWZhbWlseTogdmFyKC0tYm9keUZvbnQpO1xuICAgICAgICB0cmFuc2l0aW9uOiBhbGwgMC4ycyBlYXNlO1xuXG4gICAgICAgICY6aG92ZXIge1xuICAgICAgICAgIGJhY2tncm91bmQ6IHZhcigtLWxpZ2h0Z3JheSk7XG4gICAgICAgIH1cblxuICAgICAgICAmOmFjdGl2ZSB7XG4gICAgICAgICAgdHJhbnNmb3JtOiB0cmFuc2xhdGVZKDFweCk7XG4gICAgICAgIH1cblxuICAgICAgICAvLyBTdHlsZSB0aGUgcmVzZXQgYnV0dG9uIGRpZmZlcmVudGx5XG4gICAgICAgICY6bnRoLWNoaWxkKDIpIHtcbiAgICAgICAgICB3aWR0aDogYXV0bztcbiAgICAgICAgICBwYWRkaW5nOiAwIDEycHg7XG4gICAgICAgICAgZm9udC1zaXplOiAxNHB4O1xuICAgICAgICB9XG4gICAgICB9XG4gICAgfVxuICB9XG59XG4iXX0= */</style><link href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" rel="stylesheet" type="text/css" spa-preserve/><script src="../../prescript.js" type="application/javascript" spa-preserve></script><script type="application/javascript" spa-preserve>const fetchData = fetch("../../static/contentIndex.json").then(data => data.json())</script><link rel="alternate" type="application/rss+xml" title="RSS Feed" href="https://blog.pmunhoz.com/index.xml"/><meta property="og:image:width" content="1200"/><meta property="og:image:height" content="630"/><meta property="og:image" content="https://blog.pmunhoz.com/dbt/dbt-orchestration/dbt-orchestration-tools-comparison-og-image.webp"/><meta property="og:image:url" content="https://blog.pmunhoz.com/dbt/dbt-orchestration/dbt-orchestration-tools-comparison-og-image.webp"/><meta name="twitter:image" content="https://blog.pmunhoz.com/dbt/dbt-orchestration/dbt-orchestration-tools-comparison-og-image.webp"/><meta property="og:image:type" content="image/.webp"/></head><body data-slug="dbt/dbt-orchestration/dbt-orchestration-tools-comparison"><div id="quartz-root" class="page"><div id="quartz-body"><div class="left sidebar"><h2 class="page-title"><a href="../.." class="page-title-link">❄️ Pierre Munhoz engineering blog</a></h2><div class="spacer mobile-only"></div><div style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 1rem;"><div style="flex-grow: 1; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><div class="search"><button class="search-button"><p>Search</p><svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19.9 19.7"><title>Search</title><g class="search-path" fill="none"><path stroke-linecap="square" d="M18.5 18.3l-5.4-5.4"></path><circle cx="8" cy="8" r="7"></circle></g></svg></button><div class="search-container"><div class="search-space"><input autocomplete="off" class="search-bar" name="search" type="text" aria-label="Search for something" placeholder="Search for something"/><div class="search-layout" data-preview="true"></div></div></div></div></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="darkmode"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="dayIcon" x="0px" y="0px" viewBox="0 0 35 35" style="enable-background:new 0 0 35 35" xml:space="preserve" aria-label="Dark mode"><title>Dark mode</title><path d="M6,17.5C6,16.672,5.328,16,4.5,16h-3C0.672,16,0,16.672,0,17.5    S0.672,19,1.5,19h3C5.328,19,6,18.328,6,17.5z M7.5,26c-0.414,0-0.789,0.168-1.061,0.439l-2,2C4.168,28.711,4,29.086,4,29.5    C4,30.328,4.671,31,5.5,31c0.414,0,0.789-0.168,1.06-0.44l2-2C8.832,28.289,9,27.914,9,27.5C9,26.672,8.329,26,7.5,26z M17.5,6    C18.329,6,19,5.328,19,4.5v-3C19,0.672,18.329,0,17.5,0S16,0.672,16,1.5v3C16,5.328,16.671,6,17.5,6z M27.5,9    c0.414,0,0.789-0.168,1.06-0.439l2-2C30.832,6.289,31,5.914,31,5.5C31,4.672,30.329,4,29.5,4c-0.414,0-0.789,0.168-1.061,0.44    l-2,2C26.168,6.711,26,7.086,26,7.5C26,8.328,26.671,9,27.5,9z M6.439,8.561C6.711,8.832,7.086,9,7.5,9C8.328,9,9,8.328,9,7.5    c0-0.414-0.168-0.789-0.439-1.061l-2-2C6.289,4.168,5.914,4,5.5,4C4.672,4,4,4.672,4,5.5c0,0.414,0.168,0.789,0.439,1.06    L6.439,8.561z M33.5,16h-3c-0.828,0-1.5,0.672-1.5,1.5s0.672,1.5,1.5,1.5h3c0.828,0,1.5-0.672,1.5-1.5S34.328,16,33.5,16z     M28.561,26.439C28.289,26.168,27.914,26,27.5,26c-0.828,0-1.5,0.672-1.5,1.5c0,0.414,0.168,0.789,0.439,1.06l2,2    C28.711,30.832,29.086,31,29.5,31c0.828,0,1.5-0.672,1.5-1.5c0-0.414-0.168-0.789-0.439-1.061L28.561,26.439z M17.5,29    c-0.829,0-1.5,0.672-1.5,1.5v3c0,0.828,0.671,1.5,1.5,1.5s1.5-0.672,1.5-1.5v-3C19,29.672,18.329,29,17.5,29z M17.5,7    C11.71,7,7,11.71,7,17.5S11.71,28,17.5,28S28,23.29,28,17.5S23.29,7,17.5,7z M17.5,25c-4.136,0-7.5-3.364-7.5-7.5    c0-4.136,3.364-7.5,7.5-7.5c4.136,0,7.5,3.364,7.5,7.5C25,21.636,21.636,25,17.5,25z"></path></svg><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="nightIcon" x="0px" y="0px" viewBox="0 0 100 100" style="enable-background:new 0 0 100 100" xml:space="preserve" aria-label="Light mode"><title>Light mode</title><path d="M96.76,66.458c-0.853-0.852-2.15-1.064-3.23-0.534c-6.063,2.991-12.858,4.571-19.655,4.571  C62.022,70.495,50.88,65.88,42.5,57.5C29.043,44.043,25.658,23.536,34.076,6.47c0.532-1.08,0.318-2.379-0.534-3.23  c-0.851-0.852-2.15-1.064-3.23-0.534c-4.918,2.427-9.375,5.619-13.246,9.491c-9.447,9.447-14.65,22.008-14.65,35.369  c0,13.36,5.203,25.921,14.65,35.368s22.008,14.65,35.368,14.65c13.361,0,25.921-5.203,35.369-14.65  c3.872-3.871,7.064-8.328,9.491-13.246C97.826,68.608,97.611,67.309,96.76,66.458z"></path></svg></button></div><div style="flex-grow: 0; flex-shrink: 1; flex-basis: auto; order: 0; align-self: center; justify-self: center;"><button class="readermode"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" class="readerIcon" fill="currentColor" stroke="currentColor" stroke-width="0.2" stroke-linecap="round" stroke-linejoin="round" width="64px" height="64px" viewBox="0 0 24 24" aria-label="Reader mode"><title>Reader mode</title><g transform="translate(-1.8, -1.8) scale(1.15, 1.2)"><path d="M8.9891247,2.5 C10.1384702,2.5 11.2209868,2.96705384 12.0049645,3.76669482 C12.7883914,2.96705384 13.8709081,2.5 15.0202536,2.5 L18.7549359,2.5 C19.1691495,2.5 19.5049359,2.83578644 19.5049359,3.25 L19.5046891,4.004 L21.2546891,4.00457396 C21.6343849,4.00457396 21.9481801,4.28672784 21.9978425,4.6528034 L22.0046891,4.75457396 L22.0046891,20.25 C22.0046891,20.6296958 21.7225353,20.943491 21.3564597,20.9931534 L21.2546891,21 L2.75468914,21 C2.37499337,21 2.06119817,20.7178461 2.01153575,20.3517706 L2.00468914,20.25 L2.00468914,4.75457396 C2.00468914,4.37487819 2.28684302,4.061083 2.65291858,4.01142057 L2.75468914,4.00457396 L4.50368914,4.004 L4.50444233,3.25 C4.50444233,2.87030423 4.78659621,2.55650904 5.15267177,2.50684662 L5.25444233,2.5 L8.9891247,2.5 Z M4.50368914,5.504 L3.50468914,5.504 L3.50468914,19.5 L10.9478955,19.4998273 C10.4513189,18.9207296 9.73864328,18.5588115 8.96709342,18.5065584 L8.77307039,18.5 L5.25444233,18.5 C4.87474657,18.5 4.56095137,18.2178461 4.51128895,17.8517706 L4.50444233,17.75 L4.50368914,5.504 Z M19.5049359,17.75 C19.5049359,18.1642136 19.1691495,18.5 18.7549359,18.5 L15.2363079,18.5 C14.3910149,18.5 13.5994408,18.8724714 13.0614828,19.4998273 L20.5046891,19.5 L20.5046891,5.504 L19.5046891,5.504 L19.5049359,17.75 Z M18.0059359,3.999 L15.0202536,4 L14.8259077,4.00692283 C13.9889509,4.06666544 13.2254227,4.50975805 12.7549359,5.212 L12.7549359,17.777 L12.7782651,17.7601316 C13.4923805,17.2719483 14.3447024,17 15.2363079,17 L18.0059359,16.999 L18.0056891,4.798 L18.0033792,4.75457396 L18.0056891,4.71 L18.0059359,3.999 Z M8.9891247,4 L6.00368914,3.999 L6.00599909,4.75457396 L6.00599909,4.75457396 L6.00368914,4.783 L6.00368914,16.999 L8.77307039,17 C9.57551536,17 10.3461406,17.2202781 11.0128313,17.6202194 L11.2536891,17.776 L11.2536891,5.211 C10.8200889,4.56369974 10.1361548,4.13636104 9.37521067,4.02745763 L9.18347055,4.00692283 L8.9891247,4 Z"></path></g></svg></button></div></div><div id="newsletter-cta" class="undefined newsletter-cta"><strong>📬 Newsletter</strong>Get bi-weekly insights &amp; tips.<br/><button id="open-newsletter-modal" class="subscribe-button">Subscribe here →</button></div><div id="newsletter-modal" class="newsletter-modal"><div class="modal-content"><button class="close-button">×</button><h3>🚀 Elevate Your Data Engineering Skills</h3><p>Beyond the blog: Receive bi-weekly doses of actionable data engineering strategies, exclusive technical experiments, and reflections on boosting your creative productivity as a technical professional.</p><form class="newsletter-form"><input type="email" placeholder="Your best engineering email" required/><button type="submit">Subscribe</button><p><i>No spam, pure value.</i></p><button id="already-subscribed-btn" class="already-subscribed-button">I'm already subscribed</button></form></div></div><div class="explorer" data-behavior="link" data-collapsed="collapsed" data-savestate="true" data-data-fns="{&quot;order&quot;:[&quot;filter&quot;,&quot;map&quot;,&quot;sort&quot;],&quot;sortFn&quot;:&quot;(a,b)=>!a.isFolder&amp;&amp;!b.isFolder||a.isFolder&amp;&amp;b.isFolder?a.displayName.localeCompare(b.displayName,void 0,{numeric:!0,sensitivity:\&quot;base\&quot;}):!a.isFolder&amp;&amp;b.isFolder?1:-1&quot;,&quot;filterFn&quot;:&quot;node=>!node.displayName.toLowerCase().startsWith(\&quot;legal notice\&quot;)&amp;&amp;!node.displayName.toLowerCase().startsWith(\&quot;privacy policy\&quot;)&amp;&amp;node.slugSegment!==\&quot;tags\&quot;&quot;,&quot;mapFn&quot;:&quot;node=>node&quot;}"><button type="button" class="explorer-toggle mobile-explorer hide-until-loaded" data-mobile="true" aria-controls="explorer-content"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide-menu"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg></button><button type="button" class="title-button explorer-toggle desktop-explorer" data-mobile="false" aria-expanded="true"><h2>Explorer</h2><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><div class="explorer-content" aria-expanded="false"><ul class="explorer-ul overflow" id="list-0"><li class="overflow-end"></li></ul></div><template id="template-file"><li><a href="#"></a></li></template><template id="template-folder"><li><div class="folder-container"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="5 8 14 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon"><polyline points="6 9 12 15 18 9"></polyline></svg><div><button class="folder-button"><span class="folder-title"></span></button></div></div><div class="folder-outer"><ul class="content"></ul></div></li></template></div></div><div class="center"><div class="page-header"><header><div class="mobile-header"><a href="../.." class="mobile-title">❄️ Pierre Munhoz engineering blog</a></div></header><div class="popover-hint"><nav class="breadcrumb-container" aria-label="breadcrumbs"><div class="breadcrumb-element"><a href="../../">Home</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../../dbt/">dbt</a><p> ❯ </p></div><div class="breadcrumb-element"><a href="../../dbt/dbt-orchestration/">dbt orchestration</a><p> ❯ </p></div><div class="breadcrumb-element"><a href>Best dbt Orchestration Tools: Dagster vs Airflow vs Prefect vs Actions</a></div></nav><h1 class="article-title">Best dbt Orchestration Tools: Dagster vs Airflow vs Prefect vs Actions</h1><p show-comma="true" class="content-meta"><time datetime="2026-03-20T00:00:00.000Z">Mar 20, 2026</time><span>15 min read</span></p><ul class="tags"><li><a href="../../tags/dbt" class="internal tag-link">dbt</a></li><li><a href="../../tags/dagster" class="internal tag-link">dagster</a></li><li><a href="../../tags/airflow" class="internal tag-link">airflow</a></li><li><a href="../../tags/prefect" class="internal tag-link">prefect</a></li><li><a href="../../tags/github-actions" class="internal tag-link">github-actions</a></li><li><a href="../../tags/data-engineering" class="internal tag-link">data-engineering</a></li><li><a href="../../tags/orchestration" class="internal tag-link">orchestration</a></li><li><a href="../../tags/dbt-core" class="internal tag-link">dbt-core</a></li><li><a href="../../tags/dbt-orchestration" class="internal tag-link">dbt-orchestration</a></li></ul></div></div><article class="popover-hint"><p><em>Part 5 of the “Orchestrating dbt without dbt Cloud” series. This is the comparison article. If you want the full setup guide for any specific tool, the individual articles are linked throughout.</em></p>
+<hr/>
+<h2 id="why-this-series-exists">Why This Series Exists<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#why-this-series-exists" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>dbt Cloud is a good product. It handles scheduling, observability, CI, and artifact management in one place, and for teams that can justify the cost it removes a lot of operational overhead.</p>
+<p>But dbt Cloud is also expensive at scale, and it creates a level of vendor lock-in that many teams are not comfortable with. The pricing model has changed multiple times over the years, and teams that built their entire orchestration story on top of it have found themselves renegotiating contracts from a weak position.</p>
+<p>The good news is that the open-source ecosystem around dbt orchestration has matured significantly. You can get most of what dbt Cloud offers, for free, by combining dbt Core with one of the orchestrators covered in this series. The tradeoff is that you are responsible for running and maintaining the infrastructure yourself.</p>
+<p>This article is the summary of that series. We ran the same dbt project through four different orchestrators, covering the same four scenarios each time: a daily full build, an hourly smoke check, a source freshness check, and a manual full refresh of an incremental model. Here is what we found.</p>
+<p>The companion repository with all the code is at <strong><a href="https://github.com/p-munhoz/dbt-orchestrator-comparison" class="external" target="_blank">github.com/p-munhoz/dbt-orchestrator-comparison<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></strong>.</p>
+<hr/>
+<h2 id="the-four-orchestrators-at-a-glance">The Four Orchestrators at a Glance<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-four-orchestrators-at-a-glance" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Before getting into the details, here is a high-level summary of what each tool brings to the table.</p>
+<p><strong>Dagster</strong> treats dbt models as first-class Software-Defined Assets. Every dbt node becomes a Dagster asset with its own run history, metadata, and lineage. You get the deepest dbt integration of any open-source orchestrator, at the cost of a steeper learning curve and more infrastructure to run.</p>
+<p><strong>Airflow with Cosmos</strong> is the most widely deployed option in the industry. Astronomer Cosmos turns each dbt node into an Airflow task, giving you model-level visibility inside a tool most data engineers already know. The tradeoff is real infrastructure overhead and a DAG parsing model that can cause issues at scale.</p>
+<p><strong>Prefect</strong> is the lowest-friction path to a proper orchestrator. You write Python functions, decorate them with <code>@flow</code>, and get scheduling, retries, and a UI without the complexity of Airflow or Dagster. The tradeoff is that it gives you less dbt-native visibility, and its execution model requires a long-running process that you are responsible for keeping alive.</p>
+<p><strong>GitHub Actions</strong> is not really an orchestrator. It is a CI/CD platform that happens to support cron scheduling. For small teams with simple pipelines it can be genuinely sufficient, and it requires zero infrastructure. For anything beyond a daily <code>dbt build</code>, its limitations show quickly.</p>
+<hr/>
+<h2 id="side-by-side-comparison">Side by Side Comparison<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#side-by-side-comparison" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th></th><th>Dagster</th><th>Airflow + Cosmos</th><th>Prefect</th><th>GitHub Actions</th></tr></thead><tbody><tr><td>dbt integration depth</td><td>Native assets per node</td><td>Task per node via Cosmos</td><td>Flow level, subprocess</td><td>Step level, subprocess</td></tr><tr><td>Per-model observability</td><td>Yes</td><td>Yes</td><td>No</td><td>No</td></tr><tr><td>Infrastructure to run</td><td>Medium</td><td>High</td><td>Low</td><td>None</td></tr><tr><td>Learning curve</td><td>High</td><td>Medium</td><td>Low</td><td>Very low</td></tr><tr><td>Scheduling reliability</td><td>Daemon handles it</td><td>Scheduler handles it</td><td>Requires running process</td><td>GitHub handles it</td></tr><tr><td>Retry granularity</td><td>Per op / per asset</td><td>Per task</td><td>Per flow</td><td>Per job</td></tr><tr><td>Python-first</td><td>Yes</td><td>Partial</td><td>Yes</td><td>No</td></tr><tr><td>Slim CI support</td><td>Via asset selection</td><td>Via cosmos select</td><td>Via CLI</td><td>Native with state</td></tr><tr><td>Self-host complexity</td><td>Medium</td><td>High</td><td>Low</td><td>None</td></tr><tr><td>Best team size</td><td>Any</td><td>Medium to large</td><td>Small to medium</td><td>Solo or small</td></tr><tr><td>Community maturity</td><td>Growing fast</td><td>Very mature</td><td>Growing</td><td>Very mature</td></tr><tr><td>Cost</td><td>Free</td><td>Free</td><td>Free or Cloud free tier</td><td>Free within limits</td></tr></tbody></table></div>
+<hr/>
+<h2 id="dbt-integration-depth">dbt Integration Depth<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#dbt-integration-depth" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>This is where the tools diverge most significantly and where your choice will have the most day-to-day impact.</p>
+<h3 id="dagster-models-as-assets">Dagster: models as assets<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#dagster-models-as-assets" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Dagster is the only tool in this list where dbt models are genuinely first-class objects. When you use <code>@dbt_assets</code>, Dagster parses your manifest and creates one asset per dbt node. From the Dagster UI you can see the full lineage graph, click on any model and see its last materialization time, inspect per-model logs, and selectively re-materialize parts of the graph without writing any new code.</p>
+<p>This is the closest open-source equivalent to the dbt Cloud IDE experience. If your team lives in dbt and model-level observability is a priority, Dagster is the clear winner here.</p>
+<h3 id="airflow--cosmos-tasks-with-lineage">Airflow + Cosmos: tasks with lineage<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#airflow--cosmos-tasks-with-lineage" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Cosmos gives you something very similar in practice: one Airflow task per dbt node, with the dependency graph correctly wired from the dbt manifest. In the Airflow UI you can see which specific model failed, click into its task logs, and retry just that task.</p>
+<p>The difference from Dagster is that Airflow tasks are ephemeral: once a DAG run finishes, you are looking at run history rather than a live asset graph. There is no concept of “when was this model last materialized successfully” in the way Dagster tracks it. For most teams this distinction does not matter much in practice, but it is worth being aware of.</p>
+<h3 id="prefect-and-github-actions-flow-level-only">Prefect and GitHub Actions: flow level only<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#prefect-and-github-actions-flow-level-only" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Both Prefect and GitHub Actions treat a dbt run as a single unit. You get a pass or fail for the entire invocation, and you need to read through logs to understand which model failed. This is a real limitation for larger projects.</p>
+<p>With the subprocess approach used in the Prefect flows in this series, you do get real-time log streaming in the Prefect UI, which helps. But it is still fundamentally different from seeing a graph of individual model statuses.</p>
+<hr/>
+<h2 id="infrastructure-and-operational-overhead">Infrastructure and Operational Overhead<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#infrastructure-and-operational-overhead" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<h3 id="github-actions-zero">GitHub Actions: zero<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#github-actions-zero" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Nothing to run, nothing to maintain. Push a workflow file to your repository and GitHub handles the rest. Scheduling, secrets management, run history, and failure notifications are all built in.</p>
+<p>The catch is that GitHub Actions is not in your control. If GitHub has an outage, your pipeline does not run. Scheduled workflows can also be delayed under high load, and they are silently disabled after 60 days of repository inactivity.</p>
+<h3 id="prefect-low-with-a-catch">Prefect: low, with a catch<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#prefect-low-with-a-catch" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Starting the Prefect server and writing your first flow takes about 15 minutes. The UI is clean, the API is intuitive, and the Python-first model means there is almost nothing new to learn if your team already writes Python.</p>
+<p>The catch is the execution model. Unlike Dagster and Airflow, the Prefect server does not execute anything on its own. There is no daemon that picks up scheduled runs automatically. You need a <code>serve()</code> process or a worker running and connected to the server before your 6am run will actually happen. Stop that process and your schedules go dark. This is the most common operational surprise teams hit with Prefect, and it is worth being explicit about before you commit to it.</p>
+<p>Prefect Cloud removes this concern for the control plane side, but you still need a running worker or <code>serve()</code> process on your own infrastructure for execution.</p>
+<h3 id="airflow-high">Airflow: high<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#airflow-high" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Airflow requires a scheduler process, a webserver, and a metadata database (SQLite works locally, but Postgres is strongly recommended for production). In a production setup you will likely also want a Celery or Kubernetes executor for parallel task execution, which adds more moving parts.</p>
+<p>The operational surface area is real. Airflow is well understood and well documented, but it demands more from the team that runs it than any other option in this series.</p>
+<h3 id="dagster-medium">Dagster: medium<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#dagster-medium" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Dagster needs a webserver and a daemon. The daemon is what makes scheduling reliable: it runs in the background and picks up scheduled jobs automatically without you doing anything extra, which is a meaningful advantage over Prefect. In production you would also want a persistent database for run storage rather than the default SQLite.</p>
+<p>The footprint is smaller than Airflow and larger than Prefect, but the daemon-based execution model means you get Airflow-level scheduling reliability without the full Airflow infrastructure burden.</p>
+<hr/>
+<h2 id="scheduling-reliability">Scheduling Reliability<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#scheduling-reliability" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>This is a dimension that does not get enough attention in tool comparisons.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-container"><table><thead><tr><th>Tool</th><th>What handles scheduling</th><th>What happens if it goes down</th></tr></thead><tbody><tr><td>GitHub Actions</td><td>GitHub infrastructure</td><td>Run does not happen if GitHub is down</td></tr><tr><td>Dagster</td><td>Dagster daemon</td><td>Schedules pause until daemon restarts</td></tr><tr><td>Airflow</td><td>Airflow scheduler</td><td>Schedules pause until scheduler restarts</td></tr><tr><td>Prefect</td><td>serve() process or worker</td><td>Schedules pause until process restarts, runs may be missed</td></tr></tbody></table></div>
+<p>The key difference with Prefect is the “runs may be missed” part. Dagster and Airflow both have catch-up mechanisms: when the daemon or scheduler restarts after a period of downtime, it knows which scheduled runs it missed and can execute them in order. Prefect’s behavior here depends on your configuration and whether you have <code>catchup</code> enabled on your deployments. By default, missed runs are not guaranteed to be picked up.</p>
+<p>For a daily dbt build this may be acceptable. For a pipeline that feeds a live dashboard or a financial report, it matters.</p>
+<hr/>
+<h2 id="the-decision-framework">The Decision Framework<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-decision-framework" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>Rather than prescribing a single answer, here is a set of questions that should point you toward the right tool for your context.</p>
+<p><strong>Start here: how complex is your pipeline?</strong></p>
+<p>If your pipeline is essentially a daily <code>dbt build</code> with no dependencies on external events, no complex retry logic, and no need for per-model observability, GitHub Actions is worth trying first. It is free, it requires nothing new, and you can always migrate to a proper orchestrator later when you actually need one.</p>
+<p><strong>Does your team already use Airflow?</strong></p>
+<p>If yes, adding Cosmos to your existing Airflow deployment is almost certainly the right call. The integration is mature, the operational cost of adding dbt support is low, and you avoid introducing a second orchestration tool into your stack. If no, think carefully before adopting Airflow from scratch: the infrastructure overhead is real and there are lighter options available.</p>
+<p><strong>Do you need per-model observability?</strong></p>
+<p>If yes, the choice is between Dagster and Airflow with Cosmos. Dagster gives you a more native experience (models as assets, live lineage graph, selective re-materialization). Airflow gives you per-task visibility within a tool that may already exist in your organization. If you are starting fresh and observability is a priority, Dagster is the stronger choice.</p>
+<p><strong>How much infrastructure can you realistically maintain?</strong></p>
+<p>Be honest about this. A sophisticated orchestrator that nobody has time to maintain is worse than a simple one that just works. If your team is small or infrastructure ownership is unclear, Prefect or GitHub Actions are more forgiving choices.</p>
+<p><strong>Is dbt the center of your pipeline, or one part of a larger workflow?</strong></p>
+<p>If dbt is one part of a larger workflow that also includes API calls, file transfers, ML model training, and so on, you want an orchestrator with a broad ecosystem of integrations. Airflow wins here, with the widest selection of operators and hooks for external systems. Dagster is a reasonable second. Prefect can handle Python-based tasks well but has a smaller ecosystem of pre-built integrations.</p>
+<hr/>
+<h2 id="summary-recommendations">Summary Recommendations<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#summary-recommendations" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p><strong>Use GitHub Actions if</strong> you are a solo practitioner or small team, your pipeline is simple, and you want to get something working today without learning new tooling.</p>
+<p><strong>Use Prefect if</strong> you want a proper orchestrator with a UI and scheduling but want to minimize infrastructure overhead. Be prepared to manage the execution process carefully, especially around the “no daemon” limitation.</p>
+<p><strong>Use Airflow with Cosmos if</strong> Airflow is already in your stack, or if you need the broadest ecosystem of integrations alongside dbt. Accept the infrastructure overhead as a known cost.</p>
+<p><strong>Use Dagster if</strong> dbt is central to your stack and you want the best possible native integration, per-model observability, and a software engineering approach to your data platform. Accept the learning curve as an investment.</p>
+<hr/>
+<h2 id="other-ways-to-orchestrate-dbt">Other Ways to Orchestrate dbt<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#other-ways-to-orchestrate-dbt" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>This series covered four tools in depth. It is not exhaustive. Here is an honest map of the rest of the landscape, organized by how likely each option is to be relevant to a typical dbt user.</p>
+<h3 id="mage">Mage<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#mage" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Mage is an open-source orchestrator that positions itself as an all-in-one platform: data ingestion, transformation, and orchestration in a single tool. It has native dbt support built in, meaning you can run individual dbt models as blocks inside a Mage pipeline and mix them with Python, SQL, or R blocks in the same workflow.</p>
+<p>The appeal is obvious if your team is tired of stitching together separate tools for ELT, orchestration, and monitoring. The catch is that Mage OSS (the self-hosted version) is more of a development environment than a production orchestrator, and the richer features live behind Mage Pro (the paid product). The open-source project also has fewer active contributors than Airflow, Dagster, or Prefect, which is worth factoring into a long-term adoption decision.</p>
+<p>Worth evaluating if: you want a single platform that handles ingestion and orchestration together, and you are comfortable with the OSS vs Pro boundary.</p>
+<h3 id="kestra">Kestra<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#kestra" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Kestra is a newer declarative orchestrator that defines workflows in YAML rather than Python. It has a dbt plugin that lets you run dbt commands as tasks in a Kestra flow. The UI is clean and it has gained meaningful traction, particularly among teams that prefer a low-code or YAML-first approach over writing Python DAGs.</p>
+<p>One caveat worth noting: some community feedback suggests the open-source version is less fully featured than the paid offering, and community support is more limited than the major tools. Worth investigating the gap between OSS and cloud before committing.</p>
+<p>Worth evaluating if: your team prefers YAML-based pipeline definitions and you want something lighter than Airflow without going full Python.</p>
+<h3 id="argo-workflows">Argo Workflows<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#argo-workflows" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Argo Workflows is a Kubernetes-native workflow engine. Pipelines are defined as YAML manifests and executed as Kubernetes pods. It has good dbt support: you run dbt commands inside a container, and Argo handles scheduling, dependency ordering, and retries.</p>
+<p>The integration is straightforward in principle, but the operational surface area is significant. You need a Kubernetes cluster, you need to understand Kubernetes CRDs, and your dbt project needs to be containerized. For teams already running Kubernetes in production, Argo is a natural fit. For teams that are not, the overhead is hard to justify just to orchestrate dbt.</p>
+<p>Worth evaluating if: you are already running Kubernetes and want to unify your orchestration layer across dbt and other workloads.</p>
+<h3 id="flyte">Flyte<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#flyte" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Flyte is a Kubernetes-native orchestrator built primarily for ML and data science workflows. It has a dbt plugin and good support for type safety and reproducible executions. Its strength is in compute-intensive, ML-heavy pipelines where you need strong isolation between tasks and reliable GPU scheduling.</p>
+<p>For pure dbt orchestration, Flyte is significant overkill. The Kubernetes requirement, the strongly-typed task definitions, and the ML-first design philosophy make it a poor fit unless dbt is one small part of a larger ML pipeline that Flyte is already managing.</p>
+<p>Worth evaluating if: dbt is one step in a larger ML pipeline and your team is already using Flyte or considering it for model training.</p>
+<h3 id="luigi">Luigi<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#luigi" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>Luigi is the oldest Python orchestrator in common use, originally developed at Spotify. It works by defining task classes with explicit dependency declarations. dbt can be invoked from a Luigi task with a simple subprocess call.</p>
+<p>The honest assessment is that Luigi has largely been superseded. It has no active development to speak of, its UI is minimal, and it lacks the retry semantics, observability, and ecosystem integrations of modern tools. If you encounter it in a legacy codebase, you know why it is there. Starting a new project with Luigi today is hard to justify.</p>
+<p>Worth evaluating if: you are maintaining a legacy pipeline that already uses Luigi and migration cost is not justified.</p>
+<h3 id="cloud-native-schedulers">Cloud-Native Schedulers<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#cloud-native-schedulers" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>A few cloud-specific options are worth mentioning for teams already deep in a particular cloud ecosystem.</p>
+<p><strong>Google Cloud Workflows and Cloud Composer</strong> are the GCP-native options. Cloud Composer is managed Airflow, which means you get Airflow’s feature set without running it yourself. Cloud Workflows is a lighter serverless option for simpler pipelines. If your entire stack lives in GCP, both are worth pricing out before spinning up self-hosted infrastructure.</p>
+<p><strong>AWS Step Functions</strong> can orchestrate dbt by invoking ECS tasks or Lambda functions that run dbt commands. It is fully serverless and integrates naturally with the rest of the AWS ecosystem. The trade-off is that Step Functions workflows are defined in JSON or YAML state machines, which is more verbose and less ergonomic than writing Python. It is a reasonable option for AWS-first teams with simple dbt pipelines but becomes unwieldy for complex dependency graphs.</p>
+<p><strong>Azure Data Factory</strong> is Microsoft’s managed orchestration service. It has a dbt integration and works well for teams already committed to the Azure ecosystem. The visual pipeline editor can appeal to less technical stakeholders, though it adds a layer of indirection that data engineers often find frustrating.</p>
+<p>Worth evaluating if: you are already heavily invested in one cloud provider and want to minimize the number of tools you self-host.</p>
+<h3 id="managed-versions-of-the-tools-we-tested">Managed Versions of the Tools We Tested<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#managed-versions-of-the-tools-we-tested" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h3>
+<p>All four tools covered in this series have managed or partially managed offerings that reduce the operational burden of self-hosting:</p>
+<p><strong>Astronomer</strong> is the managed Airflow platform from the team behind Cosmos. You get Airflow with reduced infrastructure overhead, enterprise support, and a better deployment experience. If Airflow is the right fit but self-hosting is a concern, Astronomer is worth pricing out.</p>
+<p><strong>Dagster Cloud</strong> follows the same model as Prefect Cloud: managed control plane, your execution infrastructure. The free tier is generous for small teams and the developer experience is identical to self-hosted.</p>
+<p><strong>Prefect Cloud</strong> as discussed in Part 3, removes the need to self-host the Prefect server entirely. The free tier covers most individual and small-team use cases.</p>
+<hr/>
+<h2 id="the-repository">The Repository<a role="anchor" aria-hidden="true" tabindex="-1" data-no-popover="true" href="#the-repository" class="internal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a></h2>
+<p>All four orchestrators are implemented against the same dbt project in a single monorepo. The dbt project uses DuckDB so you can run everything locally without any cloud credentials. Each orchestrator folder has its own README with setup instructions.</p>
+<pre><code>dbt-orchestrator-comparison/
+├── dbt_project/          # shared dbt project (DuckDB)
+├── orchestrators/
+│   ├── dagster/          # Part 1
+│   ├── airflow/          # Part 2
+│   ├── prefect/          # Part 3
+│   └── github-actions/   # Part 4
+└── Makefile
+</code></pre>
+<p>Clone it, run <code>make build</code> from the root to verify the dbt project works, then follow the README in whichever orchestrator folder matches your interest.</p>
+<p><strong><a href="https://github.com/p-munhoz/dbt-orchestrator-comparison" class="external" target="_blank">github.com/p-munhoz/dbt-orchestrator-comparison<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a></strong></p>
+<hr/>
+<p><em>This wraps up the series. If you found it useful, <a href="https://grumpystack.beehiiv.com/" class="external" target="_blank">the newsletter<svg aria-hidden="true" class="external-icon" style="max-width:0.8em;max-height:0.8em;" viewBox="0 0 512 512"><path d="M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z"></path></svg></a> covers similar deep dives on data engineering tooling every two weeks.</em></p>
+<hr/>
+<p><strong>Series: Orchestrating dbt without dbt Cloud</strong>
+<a href="../../dbt/dbt-orchestration/orchestrating-dbt-with-dagster" class="internal alias" data-slug="dbt/dbt-orchestration/orchestrating-dbt-with-dagster">Part 1: Dagster</a> · <a href="../../dbt/dbt-orchestration/orchestrating-dbt-with-airflow" class="internal alias" data-slug="dbt/dbt-orchestration/orchestrating-dbt-with-airflow">Part 2: Airflow + Cosmos</a> · <a href="../../dbt/dbt-orchestration/orchestrating-dbt-with-prefect" class="internal alias" data-slug="dbt/dbt-orchestration/orchestrating-dbt-with-prefect">Part 3: Prefect</a> · <a href="../../dbt/dbt-orchestration/orchestrating-dbt-with-github-actions" class="internal alias" data-slug="dbt/dbt-orchestration/orchestrating-dbt-with-github-actions">Part 4: GitHub Actions</a></p></article><hr/><div class="page-footer"><div class="newsletter-container" id="newsletter-banner"><iframe src="https://embeds.beehiiv.com/31677076-bfa0-485d-80e7-72c5f7d11891" data-test-id="beehiiv-embed" width="100%" height="320" frameborder="0" scrolling="no" style="border-radius:4px;border:2px solid #e5e7eb;margin:0px;background-color:transparent;"></iframe></div><div id="page-reactions-container" class="page-reactions-container"><h4>React to this article!</h4><div class="reaction-buttons-wrapper"></div></div></div></div><div class="right sidebar"><div class="toc desktop-only"><button type="button" class="toc-header" aria-controls="toc-content" aria-expanded="true"><h3>Table of Contents</h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fold"><polyline points="6 9 12 15 18 9"></polyline></svg></button><ul class="toc-content overflow" id="list-1"><li class="depth-0"><a href="#why-this-series-exists" data-for="why-this-series-exists">Why This Series Exists</a></li><li class="depth-0"><a href="#the-four-orchestrators-at-a-glance" data-for="the-four-orchestrators-at-a-glance">The Four Orchestrators at a Glance</a></li><li class="depth-0"><a href="#side-by-side-comparison" data-for="side-by-side-comparison">Side by Side Comparison</a></li><li class="depth-0"><a href="#dbt-integration-depth" data-for="dbt-integration-depth">dbt Integration Depth</a></li><li class="depth-1"><a href="#dagster-models-as-assets" data-for="dagster-models-as-assets">Dagster: models as assets</a></li><li class="depth-1"><a href="#airflow--cosmos-tasks-with-lineage" data-for="airflow--cosmos-tasks-with-lineage">Airflow + Cosmos: tasks with lineage</a></li><li class="depth-1"><a href="#prefect-and-github-actions-flow-level-only" data-for="prefect-and-github-actions-flow-level-only">Prefect and GitHub Actions: flow level only</a></li><li class="depth-0"><a href="#infrastructure-and-operational-overhead" data-for="infrastructure-and-operational-overhead">Infrastructure and Operational Overhead</a></li><li class="depth-1"><a href="#github-actions-zero" data-for="github-actions-zero">GitHub Actions: zero</a></li><li class="depth-1"><a href="#prefect-low-with-a-catch" data-for="prefect-low-with-a-catch">Prefect: low, with a catch</a></li><li class="depth-1"><a href="#airflow-high" data-for="airflow-high">Airflow: high</a></li><li class="depth-1"><a href="#dagster-medium" data-for="dagster-medium">Dagster: medium</a></li><li class="depth-0"><a href="#scheduling-reliability" data-for="scheduling-reliability">Scheduling Reliability</a></li><li class="depth-0"><a href="#the-decision-framework" data-for="the-decision-framework">The Decision Framework</a></li><li class="depth-0"><a href="#summary-recommendations" data-for="summary-recommendations">Summary Recommendations</a></li><li class="depth-0"><a href="#other-ways-to-orchestrate-dbt" data-for="other-ways-to-orchestrate-dbt">Other Ways to Orchestrate dbt</a></li><li class="depth-1"><a href="#mage" data-for="mage">Mage</a></li><li class="depth-1"><a href="#kestra" data-for="kestra">Kestra</a></li><li class="depth-1"><a href="#argo-workflows" data-for="argo-workflows">Argo Workflows</a></li><li class="depth-1"><a href="#flyte" data-for="flyte">Flyte</a></li><li class="depth-1"><a href="#luigi" data-for="luigi">Luigi</a></li><li class="depth-1"><a href="#cloud-native-schedulers" data-for="cloud-native-schedulers">Cloud-Native Schedulers</a></li><li class="depth-1"><a href="#managed-versions-of-the-tools-we-tested" data-for="managed-versions-of-the-tools-we-tested">Managed Versions of the Tools We Tested</a></li><li class="depth-0"><a href="#the-repository" data-for="the-repository">The Repository</a></li><li class="overflow-end"></li></ul></div><div class="backlinks"><h3>Backlinks</h3><ul id="list-2" class="overflow"><li><a href="../../dbt/dbt-orchestration/orchestrating-dbt-with-airflow" class="internal">How to Orchestrate dbt with Airflow &amp; Cosmos (dbt Cloud Alternative)</a></li><li><a href="../../dbt/dbt-orchestration/orchestrating-dbt-with-dagster" class="internal">How to Orchestrate dbt with Dagster: The Best Open-Source Alternative</a></li><li><a href="../../dbt/dbt-orchestration/orchestrating-dbt-with-github-actions" class="internal">Automate dbt with GitHub Actions: CI/CD &amp; Scheduling Guide</a></li><li><a href="../../dbt/dbt-orchestration/orchestrating-dbt-with-prefect" class="internal">How to Orchestrate dbt with Prefect: A Lightweight Alternative</a></li><li class="overflow-end"></li></ul></div></div><footer class=" footer-container"><div class="footer-left"><p>Created with ❤️ by <a href="https://pierre-munhoz-portfolio.vercel.app/" target="_blank">Pierre Munhoz</a> © 2026</p></div><div class="footer-right"><ul><li><a href="https://grumpystack.beehiiv.com/subscribe" target="_blank">Newsletter</a></li><li><a href="https://github.com/p-munhoz/" target="_blank">GitHub</a></li><li><a href="https://www.linkedin.com/in/pierre-munhoz/" target="_blank">LinkedIn</a></li><li><a href="/legal" target="_blank">Legal Notice</a></li><li><a href="/privacy-policy" target="_blank">Privacy Policy</a></li><li><a href="https://ko-fi.com/learn_with_pierre" target="_blank">Support me (Ko-fi)</a></li></ul></div></footer></div></div></body><script type="application/javascript">function n(){let t=this.parentElement;t.classList.toggle("is-collapsed");let e=t.getElementsByClassName("callout-content")[0];if(!e)return;let l=t.classList.contains("is-collapsed");e.style.gridTemplateRows=l?"0fr":"1fr"}function c(){let t=document.getElementsByClassName("callout is-collapsible");for(let e of t){let l=e.getElementsByClassName("callout-title")[0],s=e.getElementsByClassName("callout-content")[0];if(!l||!s)continue;l.addEventListener("click",n),window.addCleanup(()=>l.removeEventListener("click",n));let o=e.classList.contains("is-collapsed");s.style.gridTemplateRows=o?"0fr":"1fr"}}document.addEventListener("nav",c);
+</script><script type="module">function f(i,e){if(!i)return;function r(o){o.target===this&&(o.preventDefault(),o.stopPropagation(),e())}function t(o){o.key.startsWith("Esc")&&(o.preventDefault(),e())}i?.addEventListener("click",r),window.addCleanup(()=>i?.removeEventListener("click",r)),document.addEventListener("keydown",t),window.addCleanup(()=>document.removeEventListener("keydown",t))}function y(i){for(;i.firstChild;)i.removeChild(i.firstChild)}var h=class{constructor(e,r){this.container=e;this.content=r;this.setupEventListeners(),this.setupNavigationControls(),this.resetTransform()}isDragging=!1;startPan={x:0,y:0};currentPan={x:0,y:0};scale=1;MIN_SCALE=.5;MAX_SCALE=3;cleanups=[];setupEventListeners(){let e=this.onMouseDown.bind(this),r=this.onMouseMove.bind(this),t=this.onMouseUp.bind(this),o=this.resetTransform.bind(this);this.container.addEventListener("mousedown",e),document.addEventListener("mousemove",r),document.addEventListener("mouseup",t),window.addEventListener("resize",o),this.cleanups.push(()=>this.container.removeEventListener("mousedown",e),()=>document.removeEventListener("mousemove",r),()=>document.removeEventListener("mouseup",t),()=>window.removeEventListener("resize",o))}cleanup(){for(let e of this.cleanups)e()}setupNavigationControls(){let e=document.createElement("div");e.className="mermaid-controls";let r=this.createButton("+",()=>this.zoom(.1)),t=this.createButton("-",()=>this.zoom(-.1)),o=this.createButton("Reset",()=>this.resetTransform());e.appendChild(t),e.appendChild(o),e.appendChild(r),this.container.appendChild(e)}createButton(e,r){let t=document.createElement("button");return t.textContent=e,t.className="mermaid-control-button",t.addEventListener("click",r),window.addCleanup(()=>t.removeEventListener("click",r)),t}onMouseDown(e){e.button===0&&(this.isDragging=!0,this.startPan={x:e.clientX-this.currentPan.x,y:e.clientY-this.currentPan.y},this.container.style.cursor="grabbing")}onMouseMove(e){this.isDragging&&(e.preventDefault(),this.currentPan={x:e.clientX-this.startPan.x,y:e.clientY-this.startPan.y},this.updateTransform())}onMouseUp(){this.isDragging=!1,this.container.style.cursor="grab"}zoom(e){let r=Math.min(Math.max(this.scale+e,this.MIN_SCALE),this.MAX_SCALE),t=this.content.getBoundingClientRect(),o=t.width/2,n=t.height/2,c=r-this.scale;this.currentPan.x-=o*c,this.currentPan.y-=n*c,this.scale=r,this.updateTransform()}updateTransform(){this.content.style.transform=`translate(${this.currentPan.x}px, ${this.currentPan.y}px) scale(${this.scale})`}resetTransform(){this.scale=1;let e=this.content.querySelector("svg");this.currentPan={x:e.getBoundingClientRect().width/2,y:e.getBoundingClientRect().height/2},this.updateTransform()}},C=["--secondary","--tertiary","--gray","--light","--lightgray","--highlight","--dark","--darkgray","--codeFont"],E;document.addEventListener("nav",async()=>{let e=document.querySelector(".center").querySelectorAll("code.mermaid");if(e.length===0)return;E||=await import("https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.4.0/mermaid.esm.min.mjs");let r=E.default,t=new WeakMap;for(let n of e)t.set(n,n.innerText);async function o(){for(let s of e){s.removeAttribute("data-processed");let a=t.get(s);a&&(s.innerHTML=a)}let n=C.reduce((s,a)=>(s[a]=window.getComputedStyle(document.documentElement).getPropertyValue(a),s),{}),c=document.documentElement.getAttribute("saved-theme")==="dark";r.initialize({startOnLoad:!1,securityLevel:"loose",theme:c?"dark":"base",themeVariables:{fontFamily:n["--codeFont"],primaryColor:n["--light"],primaryTextColor:n["--darkgray"],primaryBorderColor:n["--tertiary"],lineColor:n["--darkgray"],secondaryColor:n["--secondary"],tertiaryColor:n["--tertiary"],clusterBkg:n["--light"],edgeLabelBackground:n["--highlight"]}}),await r.run({nodes:e})}await o(),document.addEventListener("themechange",o),window.addCleanup(()=>document.removeEventListener("themechange",o));for(let n=0;n<e.length;n++){let v=function(){let g=l.querySelector("#mermaid-space"),m=l.querySelector(".mermaid-content");if(!m)return;y(m);let w=c.querySelector("svg").cloneNode(!0);m.appendChild(w),l.classList.add("active"),g.style.cursor="grab",u=new h(g,m)},M=function(){l.classList.remove("active"),u?.cleanup(),u=null},c=e[n],s=c.parentElement,a=s.querySelector(".clipboard-button"),d=s.querySelector(".expand-button"),p=window.getComputedStyle(a),L=a.offsetWidth+parseFloat(p.marginLeft||"0")+parseFloat(p.marginRight||"0");d.style.right=`calc(${L}px + 0.3rem)`,s.prepend(d);let l=s.querySelector("#mermaid-container");if(!l)return;let u=null;d.addEventListener("click",v),f(l,M),window.addCleanup(()=>{u?.cleanup(),d.removeEventListener("click",v)})}});
+</script><script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/copy-tex.min.js" type="application/javascript"></script><script src="../../postscript.js" type="module"></script></html>

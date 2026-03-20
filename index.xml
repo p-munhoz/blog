@@ -10,61 +10,61 @@
     <link>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</link>
     <guid>https://blog.pmunhoz.com/top-150-interviews/majority-element-algorithm</guid>
     <description>Learn how to solve the Majority Element problem from LeetCode using Python and the Boyer-Moore Voting Algorithm. Ideal for coding interviews.</description>
-    <pubDate>Thu, 05 Mar 2026 10:55:44 GMT</pubDate>
+    <pubDate>Fri, 20 Mar 2026 13:31:07 GMT</pubDate>
   </item><item>
     <title>Pierre Munhoz — Data Engineering, Analytics &amp; More</title>
     <link>https://blog.pmunhoz.com/</link>
     <guid>https://blog.pmunhoz.com/</guid>
     <description>Discover the engineering blog of Pierre Munhoz, a freelance Data Engineer. Explore insights on data engineering, analytics, and coding.</description>
-    <pubDate>Thu, 05 Mar 2026 10:55:44 GMT</pubDate>
+    <pubDate>Fri, 20 Mar 2026 13:31:07 GMT</pubDate>
   </item><item>
     <title>How to backup Airbyte on Google Cloud Storage?</title>
     <link>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</link>
     <guid>https://blog.pmunhoz.com/airbyte/how-to-backup-airbyte-gcp</guid>
     <description>I found on the airbyte forum how to backup the Airbyte instance to a new instance but I also used this resource to create a backup script of Airbyte.</description>
-    <pubDate>Thu, 05 Mar 2026 10:55:44 GMT</pubDate>
+    <pubDate>Fri, 20 Mar 2026 13:31:07 GMT</pubDate>
   </item><item>
     <title>What is Boyer-Moore majority vote algorithm?</title>
     <link>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</link>
     <guid>https://blog.pmunhoz.com/algorithm/boyer-moore-majority-vote</guid>
     <description>Boyer–Moore majority vote algorithm The Boyer-Moore voting algorithm is a clever method to find the majority element in an array (an element that appears more than n/2 times) using O(1) space and O(n) time.</description>
-    <pubDate>Thu, 05 Mar 2026 10:55:44 GMT</pubDate>
+    <pubDate>Fri, 20 Mar 2026 13:31:07 GMT</pubDate>
+  </item><item>
+    <title>Best dbt Orchestration Tools: Dagster vs Airflow vs Prefect vs Actions</title>
+    <link>https://blog.pmunhoz.com/dbt/dbt-orchestration/dbt-orchestration-tools-comparison</link>
+    <guid>https://blog.pmunhoz.com/dbt/dbt-orchestration/dbt-orchestration-tools-comparison</guid>
+    <description>A practical, code-backed comparison of the top open-source dbt orchestration tools. Evaluate Dagster, Airflow, Prefect, and GitHub Actions based on observability, infrastructure overhead, and dbt-native integration.</description>
+    <pubDate>Fri, 20 Mar 2026 00:00:00 GMT</pubDate>
+  </item><item>
+    <title>How to Orchestrate dbt with Airflow &amp; Cosmos (dbt Cloud Alternative)</title>
+    <link>https://blog.pmunhoz.com/dbt/dbt-orchestration/orchestrating-dbt-with-airflow</link>
+    <guid>https://blog.pmunhoz.com/dbt/dbt-orchestration/orchestrating-dbt-with-airflow</guid>
+    <description>Learn how to orchestrate dbt core with Apache Airflow and Astronomer Cosmos. Discover how to turn every dbt node into an Airflow task with full lineage, scheduling, and retries.</description>
+    <pubDate>Fri, 20 Mar 2026 00:00:00 GMT</pubDate>
+  </item><item>
+    <title>How to Orchestrate dbt with Dagster: The Best Open-Source Alternative</title>
+    <link>https://blog.pmunhoz.com/dbt/dbt-orchestration/orchestrating-dbt-with-dagster</link>
+    <guid>https://blog.pmunhoz.com/dbt/dbt-orchestration/orchestrating-dbt-with-dagster</guid>
+    <description>Learn how to orchestrate dbt with Dagster and dagster-dbt as a free dbt Cloud alternative. Includes a hands-on tutorial covering Software-Defined Assets, scheduling, retries, and Slim CI using DuckDB.</description>
+    <pubDate>Fri, 20 Mar 2026 00:00:00 GMT</pubDate>
+  </item><item>
+    <title>Automate dbt with GitHub Actions: CI/CD &amp; Scheduling Guide</title>
+    <link>https://blog.pmunhoz.com/dbt/dbt-orchestration/orchestrating-dbt-with-github-actions</link>
+    <guid>https://blog.pmunhoz.com/dbt/dbt-orchestration/orchestrating-dbt-with-github-actions</guid>
+    <description>Automate your dbt-core pipelines using GitHub Actions with zero infrastructure. Learn how to set up git-native scheduling, Slim CI (state:modified+), and Slack failure notifications.</description>
+    <pubDate>Fri, 20 Mar 2026 00:00:00 GMT</pubDate>
+  </item><item>
+    <title>How to Orchestrate dbt with Prefect: A Lightweight Alternative</title>
+    <link>https://blog.pmunhoz.com/dbt/dbt-orchestration/orchestrating-dbt-with-prefect</link>
+    <guid>https://blog.pmunhoz.com/dbt/dbt-orchestration/orchestrating-dbt-with-prefect</guid>
+    <description>Learn how to orchestrate dbt Core with Prefect using lightweight Python flows. Step-by-step guide covering scheduling, retries, smoke checks, and full refreshes with minimal infrastructure.</description>
+    <pubDate>Fri, 20 Mar 2026 00:00:00 GMT</pubDate>
   </item><item>
     <title>dbt Multi-Project Without dbt Cloud: A Practical Guide to dbt-loom</title>
     <link>https://blog.pmunhoz.com/dbt/dbt-multi-project-dbt-loom</link>
     <guid>https://blog.pmunhoz.com/dbt/dbt-multi-project-dbt-loom</guid>
     <description>Learn how to split a monolithic dbt project into domain-oriented projects and wire them together with dbt-loom, the open-source plugin that brings dbt Mesh-style cross-project refs to dbt Core — no dbt Cloud required. Includes a working demo with DuckDB, fan-out dependencies, CI deployment order, and a workaround for the docs lineage limitation.</description>
     <pubDate>Thu, 05 Mar 2026 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>BigQuery Column-Level Security: Complete Guide to Data Masking &amp; PII Protection</title>
-    <link>https://blog.pmunhoz.com/gcp/bigquery-column-masking</link>
-    <guid>https://blog.pmunhoz.com/gcp/bigquery-column-masking</guid>
-    <description>Learn how to implement BigQuery Column-Level Security and Dynamic Data Masking to protect PII using Terraform, dbt and IAM without duplicating tables.</description>
-    <pubDate>Wed, 11 Feb 2026 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>dbt Defer: Speed Up CI/CD Pipelines and Slash Compute Costs by 75%</title>
-    <link>https://blog.pmunhoz.com/dbt/dbt-defer-optimize-cicd-pipelines</link>
-    <guid>https://blog.pmunhoz.com/dbt/dbt-defer-optimize-cicd-pipelines</guid>
-    <description>Learn how dbt defer optimizes CI/CD pipelines by building only changed models. Complete guide with real examples showing 75% faster builds, GitLab/GitHub Actions configs, and a hands-on demo repository.</description>
-    <pubDate>Thu, 05 Feb 2026 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>Data Lakes vs Data Warehouses vs Lakehouses: A Complete Guide with Examples</title>
-    <link>https://blog.pmunhoz.com/data-engineering/data-lake-warehouse-lakehouse-guide</link>
-    <guid>https://blog.pmunhoz.com/data-engineering/data-lake-warehouse-lakehouse-guide</guid>
-    <description>Explore the evolution from data warehouses to data lakes and lakehouses. Learn the differences, when to use each architecture, and see practical examples with Delta Lake, Apache Iceberg, and PySpark code.</description>
-    <pubDate>Sun, 18 Jan 2026 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>Data File Formats for Data Engineering: CSV, JSON, Parquet, Avro, and More</title>
-    <link>https://blog.pmunhoz.com/data-engineering/file-formats-csv-parquet-avro</link>
-    <guid>https://blog.pmunhoz.com/data-engineering/file-formats-csv-parquet-avro</guid>
-    <description>A practical data engineering guide to choosing file formats for ingestion, storage, and analytics, with trade-offs and real-world examples.</description>
-    <pubDate>Sun, 11 Jan 2026 00:00:00 GMT</pubDate>
-  </item><item>
-    <title>Building a €100/month Modern Data Stack with GCP, dbt &amp; Dagster</title>
-    <link>https://blog.pmunhoz.com/gcp/bi-datawarehouse-from-scratch-gcp</link>
-    <guid>https://blog.pmunhoz.com/gcp/bi-datawarehouse-from-scratch-gcp</guid>
-    <description>Learn how I built a production-grade modern data stack for €100/month using self-hosted Airbyte, Dagster, dbt Core and BigQuery. Complete architecture guide with Terraform IaC, CI/CD best practices, and cost optimization strategies for HRIS SaaS companies.</description>
-    <pubDate>Sun, 04 Jan 2026 00:00:00 GMT</pubDate>
   </item>
     </channel>
   </rss>
